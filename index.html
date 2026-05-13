@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0c0c14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IronCore">
+<title>IronCore — التدريب</title>
+<link rel="manifest" href="manifest.json">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+:root{
+  --bg:#0c0c14; --bg2:#13131e; --bg3:#1c1c2a; --bg4:#252535;
+  --ac:#d4f000; --red:#ff4d5a; --grn:#2ecc71; --blue:#4a9eff;
+  --txt:#e2e2ee; --txt2:#6e6e99; --bdr:rgba(255,255,255,0.07);
+  --r:12px; --rs:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Cairo',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative}
+/* TOPBAR */
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:900;color:var(--ac);letter-spacing:2px}
+.logo span{color:var(--txt2);font-size:10px;display:block;letter-spacing:1px;font-family:'Cairo',sans-serif;font-weight:400}
+.streak{text-align:left}
+.streak-n{font-size:20px;font-weight:900;color:var(--ac)}
+.streak-l{font-size:9px;color:var(--txt2)}
+/* SCROLL AREA */
+#scr{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+#scr::-webkit-scrollbar{width:0}
+/* PAGES */
+.pg{display:none;padding:12px 14px 90px}
+.pg.on{display:block;animation:fu .2s ease}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+/* NAV */
+#nav{background:var(--bg2);border-top:1px solid var(--bdr);display:flex;flex-shrink:0}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 10px;cursor:pointer;color:var(--txt2);font-size:9px;font-weight:700;border:none;background:none;letter-spacing:.3px;transition:color .15s}
+.nb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nb.on{color:var(--ac)}
+/* TYPOGRAPHY */
+.sec{font-size:9px;font-weight:700;color:var(--txt2);letter-spacing:2px;text-transform:uppercase;margin:16px 0 7px}
+h2{font-size:18px;font-weight:900}
+/* HERO */
+.hero{background:var(--bg3);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--bdr)}
+.hero-lbl{font-size:9px;color:var(--txt2);margin-bottom:2px}
+.hero-name{font-size:18px;font-weight:900;line-height:1.3;margin-bottom:4px}
+.hero-sub{font-size:11px;color:var(--txt2)}
+.hero-chip{display:inline-block;background:var(--ac);color:#000;font-size:10px;font-weight:700;padding:2px 10px;border-radius:14px;margin-top:7px}
+/* STATS */
+.s3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.sbox{background:var(--bg3);border-radius:var(--rs);padding:9px 6px;text-align:center;border:1px solid var(--bdr)}
+.sval{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--ac)}
+.slbl{font-size:9px;color:var(--txt2)}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;margin-bottom:9px}
+.card-y{border-right:3px solid var(--ac)}
+/* EXERCISE ITEM */
+.exi{display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:var(--rs);padding:9px;margin-bottom:6px;cursor:pointer;border:1px solid var(--bdr)}
+.exi:active{background:var(--bg4)}
+.exic{width:34px;height:34px;border-radius:7px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.exin{flex:1;min-width:0}
+.exn{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exm{font-size:10px;color:var(--txt2);margin-top:1px}
+.exb{background:rgba(212,240,0,.1);color:var(--ac);font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;flex-shrink:0;white-space:nowrap}
+/* BUTTONS */
+.btn{display:block;width:100%;padding:11px;border-radius:var(--r);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:transform .1s,opacity .15s;text-align:center;text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn-y{background:var(--ac);color:#000}
+.btn-o{background:transparent;border:1px solid var(--bdr);color:var(--txt)}
+.btn-r{background:rgba(255,77,90,.1);color:var(--red);border:1px solid rgba(255,77,90,.2)}
+.btn-g{background:rgba(46,204,113,.1);color:var(--grn);border:1px solid rgba(46,204,113,.2)}
+.btn-sm{padding:6px 13px;font-size:12px;width:auto;display:inline-block;border-radius:var(--rs)}
+.btn-xs{padding:3px 10px;font-size:11px;width:auto;display:inline-block;border-radius:6px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+/* INPUTS */
+.inp{width:100%;background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--rs);color:var(--txt);font-family:'Cairo',sans-serif;font-size:14px;padding:9px 11px}
+.inp:focus{outline:none;border-color:var(--ac)}
+select.inp option{background:var(--bg3)}
+.inp-lbl{font-size:10px;color:var(--txt2);margin-bottom:3px;display:block}
+.inp-sm{width:60px;text-align:center;padding:7px 2px;font-size:13px;font-weight:700;border-radius:var(--rs)}
+/* SET TRACKER */
+.sh{display:grid;grid-template-columns:24px 1fr 1fr 1fr;gap:5px;font-size:9px;color:var(--txt2);text-align:center;margin-bottom:5px;padding:0 2px}
+.sr{display:grid;grid-template-columns:24px 1fr 1fr 1fr;gap:5px;align-items:center;margin-bottom:6px}
+.sn{width:24px;height:24px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--txt2);cursor:pointer;flex-shrink:0;border:1px solid var(--bdr)}
+.sn.dn{background:var(--ac);color:#000;border-color:var(--ac)}
+/* DAY CHIPS */
+.dchip{display:inline-block;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;margin-left:4px;margin-bottom:5px;cursor:pointer;border:1px solid var(--bdr);color:var(--txt2);background:var(--bg3)}
+.dchip.on{background:var(--ac);color:#000;border-color:var(--ac)}
+.cwrap{display:flex;flex-wrap:wrap;margin-bottom:8px}
+/* TOOLS */
+.tres{background:var(--bg3);border-radius:var(--rs);padding:12px;text-align:center;margin-top:8px;display:none;border:1px solid var(--bdr)}
+.tval{font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:900;color:var(--ac)}
+.tunit{font-size:11px;color:var(--txt2)}
+/* TIMER */
+.timer-big{font-family:'Barlow Condensed',sans-serif;font-size:90px;font-weight:900;text-align:center;color:var(--ac);line-height:1;letter-spacing:-2px;padding:16px 0}
+.timer-big.warn{color:var(--red)}
+.presets{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:8px 0}
+.prs{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt2);border-radius:14px;padding:5px 12px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+.prs.on{background:var(--ac);color:#000;border-color:var(--ac)}
+/* MODALS */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.ov.open{display:flex}
+.mbox{background:var(--bg2);border-radius:18px 18px 0 0;padding:16px 14px 34px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;animation:su .2s ease;border:1px solid var(--bdr);border-bottom:none}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mh{width:28px;height:3px;background:var(--bg4);border-radius:2px;margin:0 auto 14px}
+.mt{font-size:15px;font-weight:900;margin-bottom:11px}
+/* HISTORY */
+.hc{background:var(--bg3);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px;border:1px solid var(--bdr)}
+.hd{font-size:9px;color:var(--txt2);margin-bottom:3px}
+.hn{font-size:13px;font-weight:700;margin-bottom:5px}
+.hs{display:flex;flex-wrap:wrap;gap:8px}
+.hst{font-size:10px;color:var(--txt2)}
+.hst b{color:var(--txt);font-weight:700}
+/* INSTALL */
+#inst-ban{display:none;background:rgba(212,240,0,.06);border:1px solid rgba(212,240,0,.18);border-radius:var(--rs);padding:8px 11px;margin-bottom:10px}
+/* PROGRESS */
+.pb-wrap{background:var(--bg4);border-radius:3px;height:4px;margin-top:5px}
+.pb{height:4px;border-radius:3px;background:var(--ac);transition:width .35s ease}
+/* EMPTY */
+.empty{text-align:center;padding:24px;color:var(--txt2);font-size:12px;border:1px dashed var(--bdr);border-radius:var(--r)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div>
+    <div class="logo">IRONCORE<span>نظام التدريب الشخصي</span></div>
+  </div>
+  <div class="streak">
+    <div class="streak-n" id="streak-n">🔥 0</div>
+    <div class="streak-l">يوم متتالي</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div id="scr">
+
+<!-- HOME -->
+<div class="pg on" id="pg-home">
+  <div id="inst-ban">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <span style="font-size:12px;font-weight:700">📲 ثبّت التطبيق على الهاتف</span>
+      <button class="btn btn-y btn-xs" id="inst-btn">تثبيت</button>
+    </div>
+    <div style="font-size:10px;color:var(--txt2);margin-top:3px">يعمل بدون إنترنت بعد التثبيت</div>
+  </div>
+  <div class="hero">
+    <div class="hero-lbl" id="h-date">—</div>
+    <div class="hero-name" id="h-title">تدريب اليوم</div>
+    <div class="hero-sub" id="h-sub">جاري التحميل...</div>
+    <div class="hero-chip" id="h-chip">—</div>
+  </div>
+  <div class="s3">
+    <div class="sbox"><div class="sval" id="st-s">0</div><div class="slbl">جلسة</div></div>
+    <div class="sbox"><div class="sval" id="st-v">0</div><div class="slbl">كجم إجمالي</div></div>
+    <div class="sbox"><div class="sval" id="st-w">0</div><div class="slbl">هذا الأسبوع</div></div>
+  </div>
+  <div class="sec">آخر جلسة</div>
+  <div id="last-s"><div class="empty">لا توجد جلسات بعد<br>اضغط «البرنامج» وابدأ أول تدريب</div></div>
+  <div class="sec">تمارين من wger.de</div>
+  <div id="wger-l"><div style="color:var(--txt2);font-size:12px;padding:6px 0">⏳ جاري التحميل...</div></div>
+</div>
+
+<!-- WORKOUT -->
+<div class="pg" id="pg-workout">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+    <h2>البرنامج</h2>
+    <button class="btn btn-y btn-sm" onclick="UI.startSession()">▶ ابدأ الجلسة</button>
+  </div>
+  <div style="margin-bottom:9px">
+    <label class="inp-lbl">اختر البرنامج</label>
+    <select class="inp" id="prog-sel" onchange="UI.switchProg(this.value)"></select>
+  </div>
+  <div class="cwrap" id="day-chips"></div>
+  <div id="day-title" style="font-size:14px;font-weight:900;color:var(--ac);margin-bottom:9px"></div>
+  <div id="ex-list"></div>
+</div>
+
+<!-- TRACKER -->
+<div class="pg" id="pg-tracker">
+  <div id="tracker-content">
+    <div class="empty">لا توجد جلسة نشطة<br>اذهب إلى «البرنامج» ثم اضغط ابدأ الجلسة</div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="pg" id="pg-tools">
+  <h2 style="margin-bottom:13px">الأدوات</h2>
+
+  <div class="sec">حاسبة 1RM — أقصى وزن</div>
+  <div class="card">
+    <div class="r2" style="gap:7px;margin-bottom:8px">
+      <div><label class="inp-lbl">الوزن (كجم)</label><input type="number" inputmode="decimal" class="inp" id="t-w" placeholder="100" oninput="T.orm()"></div>
+      <div><label class="inp-lbl">التكرارات</label><input type="number" inputmode="numeric" class="inp" id="t-r" placeholder="5" oninput="T.orm()"></div>
+    </div>
+    <div class="tres" id="orm-res">
+      <div class="tval" id="orm-v">—</div>
+      <div class="tunit">كجم — 1RM المقدر (Epley)</div>
+      <div id="orm-tbl" class="r3" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div class="sec">BMR / TDEE — السعرات اليومية</div>
+  <div class="card">
+    <div class="r2" style="gap:7px;margin-bottom:7px">
+      <div><label class="inp-lbl">الوزن (كجم)</label><input type="number" inputmode="decimal" class="inp" id="b-w" placeholder="80" oninput="T.bmr()"></div>
+      <div><label class="inp-lbl">الطول (سم)</label><input type="number" inputmode="decimal" class="inp" id="b-h" placeholder="175" oninput="T.bmr()"></div>
+      <div><label class="inp-lbl">العمر</label><input type="number" inputmode="numeric" class="inp" id="b-a" placeholder="25" oninput="T.bmr()"></div>
+      <div><label class="inp-lbl">الجنس</label>
+        <select class="inp" id="b-g" onchange="T.bmr()">
+          <option value="m">ذكر</option><option value="f">أنثى</option>
+        </select>
+      </div>
+    </div>
+    <label class="inp-lbl">مستوى النشاط</label>
+    <select class="inp" id="b-act" onchange="T.bmr()" style="margin-bottom:8px">
+      <option value="1.2">مستقر (لا رياضة)</option>
+      <option value="1.375">خفيف (1–3 أيام/أسبوع)</option>
+      <option value="1.55" selected>معتدل (3–5 أيام)</option>
+      <option value="1.725">نشيط (6–7 أيام)</option>
+      <option value="1.9">مكثف جداً</option>
+    </select>
+    <div class="tres" id="bmr-res">
+      <div class="tval" id="bmr-v">—</div>
+      <div class="tunit">سعرة / يوم (TDEE)</div>
+      <div id="bmr-goals" class="r3" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div class="sec">نسبة الدهون — Navy Method</div>
+  <div class="card">
+    <div class="r2" style="gap:7px;margin-bottom:8px">
+      <div><label class="inp-lbl">خصر (سم)</label><input type="number" inputmode="decimal" class="inp" id="f-wa" placeholder="85" oninput="T.bf()"></div>
+      <div><label class="inp-lbl">رقبة (سم)</label><input type="number" inputmode="decimal" class="inp" id="f-ne" placeholder="38" oninput="T.bf()"></div>
+      <div><label class="inp-lbl">ورك — إناث (سم)</label><input type="number" inputmode="decimal" class="inp" id="f-hi" placeholder="اختياري" oninput="T.bf()"></div>
+      <div><label class="inp-lbl">طول (سم)</label><input type="number" inputmode="decimal" class="inp" id="f-ht" placeholder="175" oninput="T.bf()"></div>
+    </div>
+    <div class="tres" id="bf-res">
+      <div class="tval" id="bf-v">—</div>
+      <div class="tunit">% نسبة الدهون المقدرة</div>
+      <div id="bf-cat" style="margin-top:4px;font-size:12px;color:var(--txt2)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="pg" id="pg-history">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+    <h2>السجل</h2>
+    <button class="btn btn-r btn-sm" onclick="UI.clearHist()">مسح الكل</button>
+  </div>
+  <div id="hist-list"></div>
+</div>
+
+</div><!-- /scr -->
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="nb on" data-pg="home" onclick="UI.nav('home',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    الرئيسية
+  </button>
+  <button class="nb" data-pg="workout" onclick="UI.nav('workout',this)">
+    <svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h16M8 4v4M8 16v4M16 4v4M16 16v4"/></svg>
+    البرنامج
+  </button>
+  <button class="nb" data-pg="tracker" onclick="UI.nav('tracker',this)">
+    <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    تتبع
+  </button>
+  <button class="nb" data-pg="tools" onclick="UI.nav('tools',this)">
+    <svg viewBox="0 0 24 24"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+    أدوات
+  </button>
+  <button class="nb" data-pg="history" onclick="UI.nav('history',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    السجل
+  </button>
+</nav>
+</div>
+
+<!-- TIMER MODAL -->
+<div class="ov" id="timer-ov">
+  <div class="mbox">
+    <div class="mh"></div>
+    <div class="mt">⏱ مؤقت الراحة</div>
+    <div class="timer-big" id="timer-disp">01:30</div>
+    <div class="presets">
+      <button class="prs" onclick="TM.set(30)">30ث</button>
+      <button class="prs on" onclick="TM.set(90)">90ث</button>
+      <button class="prs" onclick="TM.set(120)">2د</button>
+      <button class="prs" onclick="TM.set(180)">3د</button>
+      <button class="prs" onclick="TM.set(300)">5د</button>
+    </div>
+    <div class="r2" style="gap:7px;margin-top:8px">
+      <button class="btn btn-y" id="timer-tog" onclick="TM.toggle()">▶ ابدأ</button>
+      <button class="btn btn-o" onclick="TM.close()">✕ إغلاق</button>
+    </div>
+    <button class="btn btn-o" style="margin-top:7px;font-size:11px" onclick="TM.reset()">↺ إعادة ضبط</button>
+  </div>
+</div>
+
+<!-- EXERCISE MODAL -->
+<div class="ov" id="ex-ov">
+  <div class="mbox">
+    <div class="mh"></div>
+    <div class="mt" id="em-name">—</div>
+    <div id="em-body"></div>
+    <button class="btn btn-o" style="margin-top:12px" onclick="document.getElementById('ex-ov').classList.remove('open')">إغلاق</button>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   DATA
+========================================================== */
+const DAR=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+
+const PROGS={
+  "PPL — Push/Pull/Legs":{days:[
+    {name:"Push — صدر، كتف، تراي",muscles:"صدر / كتف / تراي",exercises:[
+      {n:"Bench Press — بنش برس",m:"صدر",s:4,r:"6–8",tip:"ثبّت الكتف للخلف، قوس خفيف"},
+      {n:"Incline DB Press — مائل",m:"صدر علوي",s:3,r:"8–12",tip:"30°، أبطئ في الهبوط"},
+      {n:"Cable Fly — فلاي",m:"صدر",s:3,r:"12–15",tip:"ركّز على الانقباض"},
+      {n:"OHP — ضغط عسكري",m:"كتف أمامي",s:4,r:"6–10",tip:"شدّ البطن، لا تقوس"},
+      {n:"Lateral Raise — جانبي",m:"كتف جانبي",s:4,r:"15–20",tip:"كوع خفيف الانحناء"},
+      {n:"Tricep Pushdown — تراي",m:"تراي",s:3,r:"10–15",tip:"ثبّت الكوعين"},
+      {n:"Overhead Ext — تراي علوي",m:"تراي",s:3,r:"10–15",tip:"كوع للأعلى فقط"}
+    ]},
+    {name:"Pull — ظهر وبايسبس",muscles:"ظهر / بايسبس",exercises:[
+      {n:"Pull-up / Lat Pulldown",m:"ظهر عريض",s:4,r:"6–10",tip:"اجذب الكوعين للأسفل"},
+      {n:"Barbell Row — سحب بار",m:"ظهر متوسط",s:4,r:"6–8",tip:"ظهر مسطح، اجذب للسرة"},
+      {n:"Seated Cable Row",m:"ظهر متوسط",s:3,r:"10–12",tip:"اضغط لوحي الكتف"},
+      {n:"Face Pull — فيس بول",m:"دالية خلفية",s:3,r:"15–20",tip:"اسحب نحو الوجه"},
+      {n:"Barbell Curl — كيرل",m:"بايسبس",s:3,r:"8–12",tip:"لا تأرجح الجسم"},
+      {n:"Incline DB Curl",m:"بايسبس",s:3,r:"10–15",tip:"اطالة كاملة في الأسفل"}
+    ]},
+    {name:"Legs — أرجل كامل",muscles:"أرباعية / همسترينج / ردف",exercises:[
+      {n:"Squat — سكوات",m:"أرباعية / ردف",s:4,r:"6–8",tip:"ركبة تتبع الإصبع، عمق مناسب"},
+      {n:"Romanian Deadlift",m:"همسترينج / ردف",s:3,r:"8–12",tip:"ظهر مسطح، اطالة للأسفل"},
+      {n:"Leg Press — ليج برس",m:"أرباعية",s:3,r:"10–15",tip:"لا تقفل الركبة"},
+      {n:"Leg Curl — كيرل ساق",m:"همسترينج",s:3,r:"10–15",tip:"تحكم في الهبوط"},
+      {n:"Leg Extension",m:"أرباعية",s:3,r:"12–20",tip:"اضغط في القمة"},
+      {n:"Calf Raise — كالف",m:"ربلة",s:4,r:"15–20",tip:"اطالة كاملة في الأسفل"}
+    ]},
+    {name:"Push 2 — تكرار",muscles:"صدر / كتف / تراي",exercises:[
+      {n:"Incline BB Press",m:"صدر علوي",s:4,r:"6–8",tip:""},
+      {n:"Dips — ديبس",m:"صدر / تراي",s:3,r:"8–12",tip:"أمل للأمام للصدر"},
+      {n:"Pec Deck / Butterfly",m:"صدر",s:3,r:"12–15",tip:""},
+      {n:"DB Shoulder Press",m:"كتف",s:4,r:"8–10",tip:""},
+      {n:"Cable Lateral Raise",m:"كتف جانبي",s:3,r:"15–20",tip:""},
+      {n:"Skull Crushers",m:"تراي",s:3,r:"10–12",tip:""}
+    ]},
+    {name:"Pull 2 — تكرار",muscles:"ظهر / بايسبس",exercises:[
+      {n:"Deadlift — ديدليفت",m:"ظهر كامل",s:3,r:"3–6",tip:"الشكل الصحيح أولاً دائماً"},
+      {n:"Chest Supported Row",m:"ظهر متوسط",s:3,r:"10–12",tip:""},
+      {n:"Single Arm DB Row",m:"ظهر عريض",s:3,r:"10–12",tip:""},
+      {n:"Rear Delt Fly",m:"دالية خلفية",s:3,r:"15–20",tip:""},
+      {n:"Hammer Curl",m:"بايسبس",s:3,r:"10–12",tip:""},
+      {n:"Preacher Curl",m:"بايسبس",s:3,r:"10–15",tip:""}
+    ]},
+    {name:"Legs 2 + Core",muscles:"أرجل / كور",exercises:[
+      {n:"Hack Squat",m:"أرباعية",s:4,r:"8–12",tip:""},
+      {n:"Bulgarian Split Squat",m:"أرباعية / ردف",s:3,r:"10–12",tip:"كل رجل على حدة"},
+      {n:"Seated Leg Curl",m:"همسترينج",s:3,r:"12–15",tip:""},
+      {n:"Hip Thrust — رفع الوركين",m:"ردف",s:4,r:"10–15",tip:"اضغط الردف في القمة"},
+      {n:"Plank — بلانك",m:"كور",s:3,r:"60ث",tip:"بطن مشدود، جسم مستقيم"},
+      {n:"Ab Wheel",m:"كور",s:3,r:"10–15",tip:""}
+    ]},
+    {name:"🧘 راحة — Recovery",muscles:"",rest:true,exercises:[]}
+  ]},
+  "Upper/Lower (4 أيام)":{days:[
+    {name:"Upper A — علوي",muscles:"صدر / ظهر / كتف / ذراع",exercises:[
+      {n:"Bench Press",m:"صدر",s:4,r:"6–8",tip:""},
+      {n:"Barbell Row",m:"ظهر",s:4,r:"6–8",tip:""},
+      {n:"OHP",m:"كتف",s:3,r:"8–10",tip:""},
+      {n:"Pull-up",m:"ظهر عريض",s:3,r:"8–10",tip:""},
+      {n:"Tricep Pushdown",m:"تراي",s:3,r:"12–15",tip:""},
+      {n:"Barbell Curl",m:"بايسبس",s:3,r:"12–15",tip:""}
+    ]},
+    {name:"Lower A — سفلي",muscles:"أرجل",exercises:[
+      {n:"Squat",m:"أرباعية",s:4,r:"6–8",tip:""},
+      {n:"Romanian Deadlift",m:"همسترينج / ردف",s:3,r:"8–12",tip:""},
+      {n:"Leg Press",m:"أرباعية",s:3,r:"10–15",tip:""},
+      {n:"Leg Curl",m:"همسترينج",s:3,r:"12–15",tip:""},
+      {n:"Calf Raise",m:"ربلة",s:4,r:"15–20",tip:""}
+    ]},
+    {name:"🧘 راحة",muscles:"",rest:true,exercises:[]},
+    {name:"Upper B — علوي",muscles:"صدر / ظهر / كتف",exercises:[
+      {n:"Incline DB Press",m:"صدر علوي",s:4,r:"8–12",tip:""},
+      {n:"Lat Pulldown",m:"ظهر عريض",s:4,r:"8–12",tip:""},
+      {n:"DB Shoulder Press",m:"كتف",s:3,r:"10–12",tip:""},
+      {n:"Seated Cable Row",m:"ظهر متوسط",s:3,r:"10–12",tip:""},
+      {n:"Lateral Raise",m:"كتف جانبي",s:4,r:"15–20",tip:""},
+      {n:"Face Pull",m:"دالية خلفية",s:3,r:"15–20",tip:""}
+    ]},
+    {name:"Lower B — سفلي",muscles:"أرجل / كور",exercises:[
+      {n:"Deadlift",m:"ظهر / أرجل",s:3,r:"4–6",tip:"الشكل أولاً"},
+      {n:"Hack Squat",m:"أرباعية",s:3,r:"10–12",tip:""},
+      {n:"Hip Thrust",m:"ردف",s:4,r:"10–15",tip:""},
+      {n:"Leg Extension",m:"أرباعية",s:3,r:"15–20",tip:""},
+      {n:"Plank + Ab Circuit",m:"كور",s:3,r:"—",tip:""}
+    ]},
+    {name:"🧘 راحة",muscles:"",rest:true,exercises:[]},
+    {name:"🧘 راحة",muscles:"",rest:true,exercises:[]}
+  ]},
+  "Bro Split (5 أيام)":{days:[
+    {name:"الصدر — Chest",muscles:"صدر",exercises:[
+      {n:"Flat Bench Press",m:"صدر",s:5,r:"5–8",tip:"الأساس، اجتهد في الوزن"},
+      {n:"Incline DB Press",m:"صدر علوي",s:4,r:"8–12",tip:""},
+      {n:"Decline Press",m:"صدر سفلي",s:3,r:"10–12",tip:""},
+      {n:"Cable Fly",m:"صدر",s:3,r:"12–15",tip:""},
+      {n:"Dips",m:"صدر / تراي",s:3,r:"10–15",tip:""}
+    ]},
+    {name:"الظهر — Back",muscles:"ظهر",exercises:[
+      {n:"Deadlift",m:"ظهر كامل",s:4,r:"4–6",tip:""},
+      {n:"Pull-up",m:"ظهر عريض",s:4,r:"6–10",tip:""},
+      {n:"Barbell Row",m:"ظهر متوسط",s:4,r:"6–8",tip:""},
+      {n:"Lat Pulldown",m:"ظهر عريض",s:3,r:"10–12",tip:""},
+      {n:"Seated Row",m:"ظهر متوسط",s:3,r:"10–12",tip:""},
+      {n:"Face Pull",m:"دالية خلفية",s:3,r:"15–20",tip:""}
+    ]},
+    {name:"الكتف — Shoulders",muscles:"كتف",exercises:[
+      {n:"OHP Barbell",m:"كتف كامل",s:4,r:"6–8",tip:""},
+      {n:"DB Shoulder Press",m:"كتف",s:3,r:"10–12",tip:""},
+      {n:"Lateral Raise",m:"كتف جانبي",s:5,r:"15–20",tip:"الأهم لعرض الكتف"},
+      {n:"Front Raise",m:"كتف أمامي",s:3,r:"12–15",tip:""},
+      {n:"Rear Delt Machine",m:"دالية خلفية",s:4,r:"15–20",tip:""},
+      {n:"Shrugs",m:"شراوي",s:3,r:"10–15",tip:""}
+    ]},
+    {name:"الأرجل — Legs",muscles:"أرجل",exercises:[
+      {n:"Squat",m:"أرباعية",s:5,r:"5–8",tip:""},
+      {n:"Romanian Deadlift",m:"همسترينج",s:4,r:"8–12",tip:""},
+      {n:"Leg Press",m:"أرباعية",s:3,r:"10–15",tip:""},
+      {n:"Leg Curl",m:"همسترينج",s:4,r:"10–15",tip:""},
+      {n:"Hip Thrust",m:"ردف",s:3,r:"12–15",tip:""},
+      {n:"Calf Raise",m:"ربلة",s:5,r:"15–25",tip:""}
+    ]},
+    {name:"الذراع — Arms",muscles:"بايسبس / تراي",exercises:[
+      {n:"Barbell Curl",m:"بايسبس",s:4,r:"8–12",tip:""},
+      {n:"Incline DB Curl",m:"بايسبس",s:3,r:"10–12",tip:""},
+      {n:"Preacher Curl",m:"بايسبس",s:3,r:"10–15",tip:""},
+      {n:"Skull Crushers",m:"تراي",s:4,r:"8–12",tip:""},
+      {n:"Tricep Pushdown",m:"تراي",s:3,r:"10–15",tip:""},
+      {n:"Overhead Tricep Ext",m:"تراي",s:3,r:"10–15",tip:""},
+      {n:"Hammer Curl",m:"بايسبس",s:3,r:"10–12",tip:""}
+    ]},
+    {name:"🧘 راحة",muscles:"",rest:true,exercises:[]},
+    {name:"🧘 راحة",muscles:"",rest:true,exercises:[]}
+  ]}
+};
+
+function mico(m){
+  if(/صدر/.test(m)) return "🫁";
+  if(/ظهر|دالية/.test(m)) return "🔙";
+  if(/أرباعية|همس|ربلة|ردف|ساق|أرجل/.test(m)) return "🦵";
+  if(/كتف/.test(m)) return "🏋️";
+  if(/بايسبس|تراي|ذراع|شراوي/.test(m)) return "💪";
+  if(/كور|بطن/.test(m)) return "🧱";
+  return "⚡";
+}
+
+/* ==========================================================
+   STORAGE
+========================================================== */
+const DB={
+  get(k,d=null){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}},
+  getSess(){return this.get("ic_sessions",[]);},
+  addSess(s){const a=this.getSess();a.unshift(s);this.set("ic_sessions",a.slice(0,200));}
+};
+
+/* ==========================================================
+   STATE
+========================================================== */
+const S=Object.assign({prog:"PPL — Push/Pull/Legs",activeDay:0},DB.get("ic_state",{}));
+const saveS=()=>DB.set("ic_state",{prog:S.prog,activeDay:S.activeDay});
+
+let SESSION=null;
+let EX_IDX=0;
+
+/* ==========================================================
+   TIMER
+========================================================== */
+const TM={
+  base:90,rem:90,running:false,iv:null,
+  $d(){return document.getElementById("timer-disp");},
+  set(sec){
+    this.stop();this.base=sec;this.rem=sec;this._render();
+    const map={30:"30ث",90:"90ث",120:"2د",180:"3د",300:"5د"};
+    document.querySelectorAll(".prs").forEach(b=>{
+      b.classList.toggle("on",b.textContent===map[sec]);
+    });
+  },
+  start(){
+    if(this.running) return;
+    this.running=true;
+    document.getElementById("timer-tog").textContent="⏸ إيقاف";
+    this.iv=setInterval(()=>{
+      this.rem--;
+      this._render();
+      if(this.rem<=0){
+        this.stop();this.rem=0;this._render();
+        this.$d().classList.remove("warn");
+        this.rem=this.base;
+        this._render();
+        try{new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA==").play();}catch{}
+        if(Notification.permission==="granted") new Notification("⏰ انتهت الراحة!",{body:"ابدأ المجموعة التالية 💪"});
+      }
+    },1000);
+  },
+  stop(){
+    clearInterval(this.iv);this.running=false;
+    document.getElementById("timer-tog").textContent="▶ ابدأ";
+    this.$d().classList.remove("warn");
+  },
+  toggle(){this.running?this.stop():this.start();},
+  reset(){this.stop();this.rem=this.base;this._render();},
+  open(){document.getElementById("timer-ov").classList.add("open");},
+  close(){document.getElementById("timer-ov").classList.remove("open");},
+  _render(){
+    const m=Math.floor(this.rem/60),s=this.rem%60;
+    this.$d().textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+    this.$d().classList.toggle("warn",this.rem<=10&&this.rem>0);
+  }
+};
+
+/* ==========================================================
+   TOOLS
+========================================================== */
+const T={
+  orm(){
+    const w=parseFloat(document.getElementById("t-w").value);
+    const r=parseFloat(document.getElementById("t-r").value);
+    const res=document.getElementById("orm-res");
+    if(!w||!r||r<1){res.style.display="none";return;}
+    const orm=Math.round(w*(1+r/30));
+    document.getElementById("orm-v").textContent=orm;
+    res.style.display="block";
+    const pcts=[[100,"1RM"],[95,"1–2"],[90,"3–4"],[85,"4–6"],[80,"6–8"],[75,"8–10"],[70,"10–12"]];
+    document.getElementById("orm-tbl").innerHTML=pcts.map(([p,rng])=>
+      `<div style="background:var(--bg4);border-radius:6px;padding:6px;text-align:center">
+        <div style="font-size:15px;font-weight:900;color:var(--txt)">${Math.round(orm*p/100)}</div>
+        <div style="font-size:9px;color:var(--txt2)">${p}% — ${rng}</div>
+      </div>`).join("");
+  },
+  bmr(){
+    const w=parseFloat(document.getElementById("b-w").value);
+    const h=parseFloat(document.getElementById("b-h").value);
+    const a=parseFloat(document.getElementById("b-a").value);
+    const g=document.getElementById("b-g").value;
+    const act=parseFloat(document.getElementById("b-act").value);
+    const res=document.getElementById("bmr-res");
+    if(!w||!h||!a){res.style.display="none";return;}
+    const bmr=g==="m"?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161;
+    const tdee=Math.round(bmr*act);
+    document.getElementById("bmr-v").textContent=tdee;
+    res.style.display="block";
+    document.getElementById("bmr-goals").innerHTML=[
+      [Math.round(tdee-500),"حرق دهون","var(--red)"],
+      [tdee,"صيانة","var(--ac)"],
+      [Math.round(tdee+300),"بناء عضل","var(--grn)"]
+    ].map(([v,l,c])=>
+      `<div style="background:var(--bg4);border-radius:6px;padding:8px;text-align:center">
+        <div style="font-size:16px;font-weight:900;color:${c}">${v}</div>
+        <div style="font-size:9px;color:var(--txt2)">${l}</div>
+      </div>`).join("");
+  },
+  bf(){
+    const wa=parseFloat(document.getElementById("f-wa").value);
+    const ne=parseFloat(document.getElementById("f-ne").value);
+    const hi=parseFloat(document.getElementById("f-hi").value)||0;
+    const ht=parseFloat(document.getElementById("f-ht").value);
+    const res=document.getElementById("bf-res");
+    if(!wa||!ne||!ht||wa<=ne){res.style.display="none";return;}
+    let bf;
+    if(hi>0){
+      bf=163.205*Math.log10(wa+hi-ne)-97.684*Math.log10(ht)-78.387;
+    } else {
+      bf=86.01*Math.log10(wa-ne)-70.041*Math.log10(ht)+36.76;
+    }
+    bf=Math.max(2,Math.min(50,bf));
+    document.getElementById("bf-v").textContent=bf.toFixed(1);
+    const cats=[[6,"أقل من المعدل"],[14,"رياضي ممتاز"],[21,"لياقة جيدة"],[25,"متوسط"],[32,"فوق المتوسط"]];
+    let cat="عالي";
+    for(const[limit,label] of cats){if(bf<limit){cat=label;break;}}
+    document.getElementById("bf-cat").textContent="التصنيف: "+cat;
+    res.style.display="block";
+  }
+};
+
+/* ==========================================================
+   UI
+========================================================== */
+const UI={
+  nav(pg,btn){
+    document.querySelectorAll(".pg").forEach(p=>p.classList.remove("on"));
+    document.querySelectorAll(".nb").forEach(b=>b.classList.remove("on"));
+    document.getElementById("pg-"+pg).classList.add("on");
+    if(btn) btn.classList.add("on");
+    document.getElementById("scr").scrollTop=0;
+    if(pg==="home") this.renderHome();
+    if(pg==="workout") this.renderWorkout();
+    if(pg==="tracker") this.renderTracker();
+    if(pg==="history") this.renderHist();
+  },
+
+  /* ---- HOME ---- */
+  renderHome(){
+    const now=new Date();
+    const sessions=DB.getSess();
+    // hero
+    document.getElementById("h-date").textContent=DAR[now.getDay()]+" "+now.toLocaleDateString("ar-DZ");
+    const prog=PROGS[S.prog];
+    const di=now.getDay()%prog.days.length;
+    const day=prog.days[di];
+    document.getElementById("h-title").textContent=day.name;
+    document.getElementById("h-sub").textContent=day.rest?"يوم راحة وتعافٍ 🧘":"العضلات: "+day.muscles;
+    document.getElementById("h-chip").textContent=day.rest?"🧘 استرح":"ابدأ الجلسة ← "+day.exercises.length+" تمارين";
+    // stats
+    const total=sessions.reduce((a,s)=>a+(s.volume||0),0);
+    document.getElementById("st-s").textContent=sessions.length;
+    document.getElementById("st-v").textContent=total>=1000?Math.round(total/1000)+"k":Math.round(total);
+    const weekAgo=Date.now()-7*864e5;
+    document.getElementById("st-w").textContent=sessions.filter(s=>s.date>weekAgo).length;
+    // streak
+    document.getElementById("streak-n").textContent="🔥 "+this._streak(sessions);
+    // last session
+    const el=document.getElementById("last-s");
+    if(!sessions.length){
+      el.innerHTML='<div class="empty">لا توجد جلسات بعد<br>اضغط «البرنامج» وابدأ أول تدريب 💪</div>';
+    } else {
+      const s=sessions[0];
+      const d=new Date(s.date);
+      el.innerHTML=`<div class="hc">
+        <div class="hd">${d.toLocaleDateString("ar-DZ")} · ${d.toLocaleTimeString("ar-DZ",{hour:"2-digit",minute:"2-digit"})}</div>
+        <div class="hn">${s.dayName||"جلسة"}</div>
+        <div class="hs">
+          <div class="hst"><b>${s.exercises?.length||0}</b> تمرين</div>
+          <div class="hst"><b>${Math.round(s.volume||0)} كجم</b></div>
+          <div class="hst"><b>${Math.round((s.duration||0)/60)} د</b></div>
+        </div></div>`;
+    }
+  },
+
+  _streak(sessions){
+    if(!sessions.length) return 0;
+    let streak=0,d=new Date();d.setHours(0,0,0,0);
+    for(const s of sessions){
+      const sd=new Date(s.date);sd.setHours(0,0,0,0);
+      if(sd.getTime()===d.getTime()){streak++;d.setDate(d.getDate()-1);}
+      else if(sd<d) break;
+    }
+    return streak;
+  },
+
+  /* ---- WORKOUT ---- */
+  renderWorkout(){
+    // prog select
+    const sel=document.getElementById("prog-sel");
+    if(sel.children.length===0){
+      Object.keys(PROGS).forEach(k=>{
+        const o=document.createElement("option");
+        o.value=k;o.textContent=k;
+        if(k===S.prog) o.selected=true;
+        sel.appendChild(o);
+      });
+    } else {
+      sel.value=S.prog;
+    }
+    const prog=PROGS[S.prog];
+    // day chips
+    const cw=document.getElementById("day-chips");
+    cw.innerHTML="";
+    prog.days.forEach((d,i)=>{
+      const b=document.createElement("button");
+      b.className="dchip"+(i===S.activeDay?" on":"");
+      b.textContent=d.rest?"راحة":"يوم "+(i+1);
+      b.onclick=()=>{S.activeDay=i;saveS();this.renderWorkout();};
+      cw.appendChild(b);
+    });
+    const day=prog.days[S.activeDay];
+    document.getElementById("day-title").textContent=day.name;
+    const el=document.getElementById("ex-list");
+    el.innerHTML="";
+    if(day.rest){
+      el.innerHTML='<div class="empty" style="padding:30px">🧘<br><br>يوم راحة — ريكفري<br><small>نم جيداً، ارتح، وكُل بروتيناً</small></div>';
+      return;
+    }
+    day.exercises.forEach(ex=>{
+      const d=document.createElement("div");
+      d.className="exi";
+      d.innerHTML=`<div class="exic">${mico(ex.m)}</div>
+        <div class="exin"><div class="exn">${ex.n}</div><div class="exm">${ex.m}</div></div>
+        <div class="exb">${ex.s}×${ex.r}</div>`;
+      d.onclick=()=>this.showExModal(ex);
+      el.appendChild(d);
+    });
+  },
+
+  switchProg(p){S.prog=p;S.activeDay=0;saveS();this.renderWorkout();},
+
+  showExModal(ex){
+    document.getElementById("em-name").textContent=ex.n;
+    document.getElementById("em-body").innerHTML=`
+      <div class="s3" style="margin-bottom:10px">
+        <div class="sbox"><div class="sval" style="font-size:22px">${ex.s}</div><div class="slbl">مجموعات</div></div>
+        <div class="sbox"><div class="sval" style="font-size:16px">${ex.r}</div><div class="slbl">تكرارات</div></div>
+        <div class="sbox"><div class="sval" style="font-size:14px">2–3د</div><div class="slbl">راحة</div></div>
+      </div>
+      <div class="card-y card" style="font-size:12px;color:var(--txt2)">
+        <b style="color:var(--ac)">💡 نصيحة: </b>${ex.tip||"التركيز على الاتصال العضلي وأداء صحيح"}
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--txt2)">
+        العضلة: <b style="color:var(--txt)">${ex.m}</b>
+      </div>`;
+    document.getElementById("ex-ov").classList.add("open");
+  },
+
+  /* ---- SESSION ---- */
+  startSession(){
+    const prog=PROGS[S.prog];
+    const day=prog.days[S.activeDay];
+    if(day.rest){alert("يوم راحة! اختر يوماً مختلفاً.");return;}
+    SESSION={
+      startTime:Date.now(),
+      dayName:day.name,
+      exercises:day.exercises.map(ex=>({
+        n:ex.n,m:ex.m,s:ex.s,r:ex.r,
+        sets:[{w:"",r:"",rpe:"7",done:false}]
+      }))
+    };
+    EX_IDX=0;
+    this.nav("tracker",document.querySelector('[data-pg="tracker"]'));
+  },
+
+  /* ---- TRACKER ---- */
+  renderTracker(){
+    const tc=document.getElementById("tracker-content");
+    if(!SESSION){
+      tc.innerHTML='<div class="empty">لا توجد جلسة نشطة<br><br>اذهب إلى «البرنامج» ثم اضغط «ابدأ الجلسة»</div>';
+      return;
+    }
+    const ex=SESSION.exercises[EX_IDX];
+    const total=SESSION.exercises.length;
+    const done=SESSION.exercises.reduce((a,e)=>a+(e.sets.filter(s=>s.done).length>0?1:0),0);
+    const pct=Math.round(done/total*100);
+
+    tc.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="font-size:15px;font-weight:900;color:var(--ac)">${ex.n}</div>
+        <div style="font-size:11px;color:var(--txt2)">${EX_IDX+1}/${total}</div>
+      </div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">${ex.m} — هدف: ${ex.s}×${ex.r}</div>
+      <div class="pb-wrap"><div class="pb" style="width:${pct}%"></div></div>
+      <div style="font-size:9px;color:var(--txt2);text-align:left;margin-bottom:10px">${pct}% مكتمل</div>
+
+      <!-- BEST PREV -->
+      <div id="best-prev"></div>
+
+      <!-- SET TABLE -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="sh">
+          <div>#</div><div>الوزن كجم</div><div>التكرارات</div><div>RPE</div>
+        </div>
+        <div id="set-rows"></div>
+        <button class="btn btn-o" style="margin-top:6px;font-size:12px" onclick="UI.addSet()">+ مجموعة</button>
+      </div>
+
+      <!-- NAV BUTTONS -->
+      <div class="r2" style="gap:7px;margin-bottom:7px">
+        <button class="btn btn-o" onclick="UI.prevEx()">→ السابق</button>
+        <button class="btn btn-y" onclick="UI.nextEx()">${EX_IDX<total-1?"التالي ←":"إنهاء الجلسة ✓"}</button>
+      </div>
+      <div class="r2" style="gap:7px">
+        <button class="btn btn-r" onclick="UI.endSession()">إنهاء مبكر</button>
+        <button class="btn btn-o" onclick="TM.open()">⏱ مؤقت الراحة</button>
+      </div>`;
+
+    this._renderSetRows();
+    this._renderBest(ex.n);
+  },
+
+  _renderSetRows(){
+    if(!SESSION) return;
+    const ex=SESSION.exercises[EX_IDX];
+    const wrap=document.getElementById("set-rows");
+    if(!wrap) return;
+    wrap.innerHTML=ex.sets.map((st,i)=>
+      `<div class="sr">
+        <div class="sn${st.done?" dn":""}" onclick="UI.toggleSet(${i})">${i+1}</div>
+        <input class="inp inp-sm" type="number" inputmode="decimal" placeholder="كجم" value="${st.w}"
+               onchange="UI.updSet(${i},'w',this.value)">
+        <input class="inp inp-sm" type="number" inputmode="numeric" placeholder="رب" value="${st.r}"
+               onchange="UI.updSet(${i},'r',this.value)">
+        <input class="inp inp-sm" type="number" inputmode="numeric" placeholder="7" value="${st.rpe}" min="1" max="10"
+               onchange="UI.updSet(${i},'rpe',this.value)">
+      </div>`).join("");
+  },
+
+  _renderBest(name){
+    const bp=document.getElementById("best-prev");
+    if(!bp) return;
+    for(const s of DB.getSess()){
+      const e=(s.exercises||[]).find(x=>x.n===name);
+      if(e?.sets?.length){
+        const best=e.sets.reduce((a,st)=>(+st.w||0)*(+st.r||0)>(+a.w||0)*(+a.r||0)?st:a,e.sets[0]);
+        const d=new Date(s.date);
+        bp.innerHTML=`<div class="card card-y" style="margin-bottom:8px;font-size:12px">
+          <div style="color:var(--txt2);font-size:9px;margin-bottom:3px">📈 أفضل جلسة سابقة</div>
+          <b style="color:var(--ac);font-size:15px">${best.w||"—"} كجم × ${best.r||"—"} تكرار</b>
+          <div style="color:var(--txt2);font-size:9px;margin-top:2px">${d.toLocaleDateString("ar-DZ")}</div>
+        </div>`;
+        return;
+      }
+    }
+    bp.innerHTML="";
+  },
+
+  updSet(i,f,v){if(SESSION) SESSION.exercises[EX_IDX].sets[i][f]=v;},
+
+  toggleSet(i){
+    if(!SESSION) return;
+    const st=SESSION.exercises[EX_IDX].sets[i];
+    st.done=!st.done;
+    if(st.done){TM.set(90);TM.open();TM.start();}
+    this._renderSetRows();
+  },
+
+  addSet(){
+    if(!SESSION) return;
+    SESSION.exercises[EX_IDX].sets.push({w:"",r:"",rpe:"7",done:false});
+    this._renderSetRows();
+  },
+
+  prevEx(){if(EX_IDX>0){EX_IDX--;this.renderTracker();}},
+  nextEx(){
+    if(!SESSION) return;
+    if(EX_IDX<SESSION.exercises.length-1){EX_IDX++;this.renderTracker();}
+    else this.endSession();
+  },
+
+  endSession(){
+    if(!SESSION) return;
+    const sess=SESSION;
+    sess.date=Date.now();
+    sess.duration=(Date.now()-sess.startTime)/1000;
+    sess.volume=sess.exercises.reduce((a,e)=>
+      a+e.sets.reduce((b,st)=>(+st.w||0)*(+st.r||0)+b,0),0);
+    DB.addSess(sess);
+    SESSION=null;
+    EX_IDX=0;
+    alert("✅ جلسة محفوظة!\nالحجم الإجمالي: "+Math.round(sess.volume)+" كجم\nالمدة: "+Math.round(sess.duration/60)+" دقيقة");
+    this.nav("history",document.querySelector('[data-pg="history"]'));
+  },
+
+  /* ---- HISTORY ---- */
+  renderHist(){
+    const sessions=DB.getSess();
+    const el=document.getElementById("hist-list");
+    if(!sessions.length){
+      el.innerHTML='<div class="empty">لا توجد جلسات بعد.<br>ابدأ تدريبك الأول!</div>';
+      return;
+    }
+    el.innerHTML=sessions.map(s=>{
+      const d=new Date(s.date);
+      const ts=(s.exercises||[]).reduce((a,e)=>a+(e.sets||[]).filter(st=>st.done||st.w).length,0);
+      return `<div class="hc">
+        <div class="hd">${d.toLocaleDateString("ar-DZ")} · ${d.toLocaleTimeString("ar-DZ",{hour:"2-digit",minute:"2-digit"})}</div>
+        <div class="hn">${s.dayName||"جلسة"}</div>
+        <div class="hs">
+          <div class="hst"><b>${s.exercises?.length||0}</b> تمرين</div>
+          <div class="hst"><b>${ts}</b> مجموعة</div>
+          <div class="hst"><b>${Math.round(s.volume||0)} كجم</b></div>
+          <div class="hst"><b>${Math.round((s.duration||0)/60)} د</b></div>
+        </div></div>`;
+    }).join("");
+  },
+
+  clearHist(){
+    if(!confirm("هل تريد حذف كل السجل نهائياً؟")) return;
+    localStorage.removeItem("ic_sessions");
+    this.renderHist();
+    this.renderHome();
+  }
+};
+
+/* ==========================================================
+   WGER API
+========================================================== */
+async function loadWger(){
+  const el=document.getElementById("wger-l");
+  try{
+    const ctrl=new AbortController();
+    setTimeout(()=>ctrl.abort(),6000);
+    const res=await fetch("https://wger.de/api/v2/exercise/?format=json&language=2&limit=6",{signal:ctrl.signal});
+    if(!res.ok) throw new Error(res.status);
+    const data=await res.json();
+    if(!data.results?.length){el.innerHTML="";return;}
+    el.innerHTML=data.results.map(ex=>
+      `<div class="exi">
+        <div class="exic">⚡</div>
+        <div class="exin">
+          <div class="exn" style="font-size:11px">${ex.name||"تمرين"}</div>
+          <div class="exm">wger.de · مصدر مفتوح مجاني</div>
+        </div>
+      </div>`).join("");
+  }catch{
+    el.innerHTML='<div style="font-size:11px;color:var(--txt2);padding:4px 0">⚠️ تعذر الاتصال بـ wger API — يتطلب إنترنت</div>';
+  }
+}
+
+/* ==========================================================
+   PWA
+========================================================== */
+let _dp=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();_dp=e;
+  const ban=document.getElementById("inst-ban");
+  if(ban) ban.style.display="block";
+  const btn=document.getElementById("inst-btn");
+  if(btn) btn.onclick=async()=>{
+    _dp.prompt();
+    const{outcome}=await _dp.userChoice;
+    if(outcome==="accepted") ban.style.display="none";
+    _dp=null;
+  };
+});
+window.addEventListener("appinstalled",()=>{
+  const b=document.getElementById("inst-ban");
+  if(b) b.style.display="none";
+});
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js").catch(()=>{});
+}
+if("Notification" in window && Notification.permission==="default"){
+  Notification.requestPermission();
+}
+
+/* ==========================================================
+   BOOT
+========================================================== */
+document.addEventListener("DOMContentLoaded",()=>{
+  UI.renderHome();
+  UI.renderWorkout();
+  loadWger();
+});
+</script>
+</body>
+</html>
