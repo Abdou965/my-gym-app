@@ -1,0 +1,14 @@
+{% if not custom_ex %}
+<div style="font-size:11px;color:var(--txt2);padding:4px 0">لا توجد تمارين مخصصة بعد</div>
+{% else %}
+{% for ex in custom_ex %}
+<div class="exi" style="position:relative">
+  <div class="exic">⚡</div>
+  <div class="exin"><div class="exn">{{ ex.name }}</div><div class="exm">{{ ex.muscle_group }} <span style="color:var(--pur)">مخصص</span></div></div>
+  <div class="exb">{{ ex.min_reps }}–{{ ex.max_reps }}</div>
+  <button hx-delete="/exercises/{{ ex.id }}" hx-target="#custom-ex-list" hx-swap="innerHTML"
+          hx-confirm="حذف هذا التمرين؟"
+          style="background:none;border:none;color:var(--txt3);font-size:16px;padding:4px 6px;cursor:pointer">×</button>
+</div>
+{% endfor %}
+{% endif %}

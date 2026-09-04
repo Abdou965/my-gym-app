@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0c0c14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IronCore">
+<title>IronCore</title>
+<link rel="manifest" href="/static/manifest.json">
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+:root{
+  --bg:#0c0c14;--bg2:#13131e;--bg3:#1c1c2a;--bg4:#252535;
+  --ac:#d4f000;--red:#ff4d5a;--grn:#2ecc71;--blu:#4a9eff;--pur:#a855f7;
+  --txt:#e2e2ee;--txt2:#6e6e99;--txt3:#4a4a6a;
+  --bdr:rgba(255,255,255,.07);--bdr2:rgba(255,255,255,.12);
+  --r:12px;--rs:8px;--rxs:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--txt);font-family:'Cairo',sans-serif;-webkit-font-smoothing:antialiased}
+#app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid var(--bdr)}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--ac);letter-spacing:2px;line-height:1}
+.logo small{display:block;font-family:'Cairo',sans-serif;font-size:9px;font-weight:400;color:var(--txt2);letter-spacing:.5px}
+#sess-badge{display:flex;align-items:center;gap:6px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);border-radius:14px;padding:4px 10px;text-decoration:none}
+#sess-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--grn);animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+#sess-badge span{font-size:10px;color:var(--grn);font-weight:700}
+.streak-box{text-align:left}
+.streak-n{font-size:20px;font-weight:900;color:var(--ac);line-height:1}
+.streak-l{font-size:9px;color:var(--txt2)}
+main{flex:1;padding:12px 14px 90px}
+#nav{position:sticky;bottom:0;background:var(--bg2);border-top:1px solid var(--bdr);display:flex}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 9px;color:var(--txt3);font-size:9px;font-weight:700;text-decoration:none;transition:color .15s}
+.nb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nb.on{color:var(--ac)}
+.sec{font-size:9px;font-weight:700;color:var(--txt2);letter-spacing:2px;text-transform:uppercase;margin:18px 0 8px;display:flex;justify-content:space-between}
+.sec a{font-size:10px;color:var(--ac);font-weight:700;letter-spacing:0;text-transform:none;text-decoration:none}
+h2{font-size:18px;font-weight:900}
+.hero{background:var(--bg3);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--bdr);text-decoration:none;display:block}
+.hero-lbl{font-size:9px;color:var(--txt2);margin-bottom:2px}
+.hero-name{font-size:18px;font-weight:900;color:var(--txt);margin-bottom:4px}
+.hero-sub{font-size:11px;color:var(--txt2)}
+.hero-chip{display:inline-block;background:var(--ac);color:#000;font-size:10px;font-weight:700;padding:3px 11px;border-radius:14px;margin-top:8px}
+.s3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.sbox{background:var(--bg3);border-radius:var(--rs);padding:9px 6px;text-align:center;border:1px solid var(--bdr)}
+.sval{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--ac)}
+.slbl{font-size:9px;color:var(--txt2)}
+.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 14px;margin-bottom:9px}
+.card-y{border-right:3px solid var(--ac)}
+.exi{display:flex;align-items:center;gap:9px;background:var(--bg3);border-radius:var(--rs);padding:10px;margin-bottom:6px;border:1px solid var(--bdr);text-decoration:none;color:var(--txt)}
+.exic{width:36px;height:36px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.exin{flex:1;min-width:0}
+.exn{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exm{font-size:10px;color:var(--txt2)}
+.exb{background:rgba(212,240,0,.1);color:var(--ac);font-size:10px;font-weight:700;padding:2px 7px;border-radius:var(--rxs);white-space:nowrap}
+.btn{display:block;width:100%;padding:12px;border-radius:var(--r);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;text-align:center;text-decoration:none}
+.btn-y{background:var(--ac);color:#000}
+.btn-o{background:transparent;border:1px solid var(--bdr2);color:var(--txt)}
+.btn-r{background:rgba(255,77,90,.1);color:var(--red);border:1px solid rgba(255,77,90,.22)}
+.btn-sm{padding:6px 13px;font-size:12px;width:auto;display:inline-block;border-radius:var(--rs)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.inp{width:100%;background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--txt);font-family:'Cairo',sans-serif;font-size:14px;padding:9px 11px;outline:none}
+.inp:focus{border-color:var(--ac)}
+select.inp option{background:var(--bg2)}
+.inp-lbl{font-size:10px;color:var(--txt2);margin-bottom:3px;display:block}
+.dchip{display:inline-block;padding:5px 11px;border-radius:12px;font-size:10px;font-weight:700;margin-left:4px;margin-bottom:5px;border:1px solid var(--bdr2);color:var(--txt2);background:var(--bg3);text-decoration:none}
+.dchip.on{background:var(--ac);color:#000;border-color:var(--ac)}
+.cwrap{display:flex;flex-wrap:wrap}
+.hc{background:var(--bg3);border-radius:var(--rs);padding:11px 13px;margin-bottom:7px;border:1px solid var(--bdr);text-decoration:none;color:var(--txt);display:block}
+.hd{font-size:9px;color:var(--txt2);margin-bottom:3px}
+.hn{font-size:13px;font-weight:700;margin-bottom:5px}
+.hs{display:flex;flex-wrap:wrap;gap:9px}
+.hst{font-size:10px;color:var(--txt2)}
+.hst b{color:var(--txt);font-weight:700}
+.empty{text-align:center;padding:26px;color:var(--txt2);font-size:12px;border:1px dashed var(--bdr);border-radius:var(--r);line-height:1.8}
+.tag-today{background:rgba(212,240,0,.12);color:var(--ac);font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;margin-right:4px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px}
+.bar-lbl{width:64px;flex-shrink:0;color:var(--txt2)}
+.bar-wrap{flex:1;background:var(--bg4);border-radius:4px;height:10px;overflow:hidden}
+.bar-fill{height:10px;background:var(--ac);border-radius:4px}
+.bar-val{width:20px;flex-shrink:0;text-align:left;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div class="logo">IRONCORE<small>نظام التدريب الشخصي</small></div>
+    {% if active_workout %}
+    <a href="/session/{{ active_workout.id }}" id="sess-badge"><div class="dot"></div><span>جلسة نشطة</span></a>
+    {% endif %}
+    <div class="streak-box">
+      <div class="streak-n" id="streak-n">🔥 {{ stats.streak if stats else 0 }}</div>
+      <div class="streak-l">يوم متتالي</div>
+    </div>
+  </div>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <nav id="nav">
+    <a class="nb {{ 'on' if active_page=='home' }}" href="/">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      الرئيسية
+    </a>
+    <a class="nb {{ 'on' if active_page=='workout' }}" href="/workout">
+      <svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h16M8 4v4M8 16v4M16 4v4M16 16v4"/></svg>
+      البرنامج
+    </a>
+    <a class="nb {{ 'on' if active_page=='session' }}" href="{{ '/session/' ~ active_workout.id if active_workout else '/workout' }}">
+      <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      تتبع
+    </a>
+    <a class="nb {{ 'on' if active_page=='tools' }}" href="/tools">
+      <svg viewBox="0 0 24 24"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+      أدوات
+    </a>
+    <a class="nb {{ 'on' if active_page=='history' }}" href="/history">
+      <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      السجل
+    </a>
+  </nav>
+</div>
+{% if "serviceWorker" in [] %}{% endif %}
+<script>
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/static/sw.js").catch(()=>{});
+</script>
+</body>
+</html>

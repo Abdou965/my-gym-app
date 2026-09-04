@@ -1,0 +1,44 @@
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+  <div style="font-size:16px;font-weight:900;color:var(--ac);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+    {{ current.exercise.name }}
+  </div>
+  <div style="font-size:11px;color:var(--txt2);flex-shrink:0;margin-right:8px">{{ ex_index + 1 }}/{{ items|length }}</div>
+</div>
+<div style="font-size:11px;color:var(--txt2);margin-bottom:8px">
+  {{ current.exercise.muscle_group }} — هدف: {{ current.target_sets }}×{{ current.exercise.min_reps }}–{{ current.exercise.max_reps }}
+</div>
+
+<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+  {% for item in items %}
+  <div hx-get="/session/{{ workout.id }}/exercise/{{ loop.index0 }}" hx-target="#exercise-panel-wrap" hx-swap="innerHTML"
+       hx-push-url="false" style="width:22px;height:6px;border-radius:3px;cursor:pointer;
+       background:{{ 'var(--ac)' if loop.index0 == ex_index else 'var(--bg4)' }}"></div>
+  {% endfor %}
+</div>
+
+{% if current.exercise.tip %}
+<div class="card card-y" style="font-size:12px;line-height:1.7;margin-bottom:9px">
+  <b style="color:var(--ac)">💡 </b>{{ current.exercise.tip }}
+</div>
+{% endif %}
+
+{% if suggestion %}
+<div class="card" style="border-right:3px solid {{ 'var(--grn)' if suggestion.action=='increase' else 'var(--blu)' }};font-size:12px;margin-bottom:9px">
+  <div style="font-size:9px;color:var(--txt2);margin-bottom:2px">🎯 توصية التدرج المضاعف</div>
+  {{ suggestion.message }}
+</div>
+{% endif %}
+
+<div id="set-rows-wrap">
+  {% include "components/set_rows.html" %}
+</div>
+
+<div class="r2" style="gap:7px;margin-top:9px">
+  <a class="btn btn-o" hx-get="/session/{{ workout.id }}/exercise/{{ ex_index - 1 }}" hx-target="#exercise-panel-wrap" hx-swap="innerHTML"
+     {% if ex_index == 0 %}style="opacity:.4;pointer-events:none"{% endif %} href="#">→ السابق</a>
+  {% if ex_index < items|length - 1 %}
+  <a class="btn btn-y" hx-get="/session/{{ workout.id }}/exercise/{{ ex_index + 1 }}" hx-target="#exercise-panel-wrap" hx-swap="innerHTML" href="#">التالي ←</a>
+  {% else %}
+  <button class="btn btn-y" onclick="document.getElementById('finish-modal').style.display='flex'">إنهاء ✓</button>
+  {% endif %}
+</div>

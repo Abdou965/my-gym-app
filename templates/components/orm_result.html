@@ -1,0 +1,14 @@
+{% if orm and orm > 0 %}
+<div style="background:var(--bg3);border-radius:8px;padding:13px;text-align:center;margin-top:9px;border:1px solid var(--bdr)">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:var(--ac)">{{ orm }}</div>
+  <div style="font-size:11px;color:var(--txt2)">كجم — 1RM المقدر (Brzycki)</div>
+  <div class="r3" style="margin-top:10px">
+    {% for row in rows %}
+    <div style="background:var(--bg4);border-radius:6px;padding:6px">
+      <div style="font-size:16px;font-weight:900;color:var(--txt)">{{ row.value }}</div>
+      <div style="font-size:9px;color:var(--txt2)">{{ row.pct }}%·{{ row.range }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}

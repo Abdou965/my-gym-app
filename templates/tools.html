@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="margin-bottom:13px">الأدوات</h2>
+
+<div class="sec">حاسبة 1RM — أقصى وزن (Brzycki)</div>
+<div class="card">
+  <div class="r2" style="gap:8px;margin-bottom:8px">
+    <div><label class="inp-lbl">الوزن (كجم)</label>
+      <input class="inp" type="number" step="0.5" name="weight" id="orm-w"
+             hx-post="/tools/1rm" hx-trigger="input changed delay:300ms" hx-include="#orm-r"
+             hx-target="#orm-result" hx-swap="innerHTML"></div>
+    <div><label class="inp-lbl">التكرارات</label>
+      <input class="inp" type="number" name="reps" id="orm-r"
+             hx-post="/tools/1rm" hx-trigger="input changed delay:300ms" hx-include="#orm-w"
+             hx-target="#orm-result" hx-swap="innerHTML"></div>
+  </div>
+  <div id="orm-result"></div>
+</div>
+
+<div class="sec">BMR / TDEE — السعرات اليومية</div>
+<div class="card">
+  <div class="r2" style="gap:8px;margin-bottom:8px">
+    <div><label class="inp-lbl">الوزن (كجم)</label><input class="inp" type="number" id="b-w" oninput="calcBMR()" placeholder="80"></div>
+    <div><label class="inp-lbl">الطول (سم)</label><input class="inp" type="number" id="b-h" oninput="calcBMR()" placeholder="175"></div>
+    <div><label class="inp-lbl">العمر</label><input class="inp" type="number" id="b-a" oninput="calcBMR()" placeholder="25"></div>
+    <div><label class="inp-lbl">الجنس</label>
+      <select class="inp" id="b-g" onchange="calcBMR()"><option value="m">ذكر</option><option value="f">أنثى</option></select>
+    </div>
+  </div>
+  <label class="inp-lbl">مستوى النشاط</label>
+  <select class="inp" id="b-act" onchange="calcBMR()">
+    <option value="1.2">مستقر (لا رياضة)</option>
+    <option value="1.375">خفيف (1–3 أيام)</option>
+    <option value="1.55" selected>معتدل (3–5 أيام)</option>
+    <option value="1.725">نشيط (6–7 أيام)</option>
+    <option value="1.9">مكثف جداً</option>
+  </select>
+  <div class="tres" id="bmr-res" style="display:none;background:var(--bg3);border-radius:8px;padding:13px;text-align:center;margin-top:9px;border:1px solid var(--bdr)">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:var(--ac)" id="bmr-v">—</div>
+    <div style="font-size:11px;color:var(--txt2)">سعرة / يوم (TDEE)</div>
+    <div id="bmr-goals" class="r3" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div class="sec">نسبة الدهون — Navy Method</div>
+<div class="card">
+  <div class="r2" style="gap:8px;margin-bottom:8px">
+    <div><label class="inp-lbl">خصر (سم)</label><input class="inp" type="number" id="f-wa" oninput="calcBF()" placeholder="85"></div>
+    <div><label class="inp-lbl">رقبة (سم)</label><input class="inp" type="number" id="f-ne" oninput="calcBF()" placeholder="38"></div>
+    <div><label class="inp-lbl">ورك — إناث (سم)</label><input class="inp" type="number" id="f-hi" oninput="calcBF()" placeholder="اختياري"></div>
+    <div><label class="inp-lbl">طول (سم)</label><input class="inp" type="number" id="f-ht" oninput="calcBF()" placeholder="175"></div>
+  </div>
+  <div class="tres" id="bf-res" style="display:none;background:var(--bg3);border-radius:8px;padding:13px;text-align:center;margin-top:9px;border:1px solid var(--bdr)">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:var(--ac)" id="bf-v">—</div>
+    <div style="font-size:11px;color:var(--txt2)">% نسبة الدهون المقدرة</div>
+    <div id="bf-cat" style="margin-top:5px;font-size:12px;color:var(--txt2)"></div>
+  </div>
+</div>
+
+<script>
+function calcBMR(){
+  const w=parseFloat(document.getElementById("b-w").value),h=parseFloat(document.getElementById("b-h").value),
+        a=parseFloat(document.getElementById("b-a").value),g=document.getElementById("b-g").value,
+        act=parseFloat(document.getElementById("b-act").value),res=document.getElementById("bmr-res");
+  if(!w||!h||!a||w<20||h<100||a<10){res.style.display="none";return;}
+  const bmr=g==="m"?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161, tdee=Math.round(bmr*act);
+  document.getElementById("bmr-v").textContent=tdee; res.style.display="block";
+  document.getElementById("bmr-goals").innerHTML=[[Math.round(tdee-500),"حرق دهون","var(--red)"],[tdee,"صيانة","var(--ac)"],
+    [Math.round(tdee+300),"بناء عضل","var(--grn)"]].map(([v,l,c])=>
+    `<div style="background:var(--bg4);border-radius:6px;padding:8px"><div style="font-size:17px;font-weight:900;color:${c}">${v}</div><div style="font-size:9px;color:var(--txt2)">${l}</div></div>`).join("");
+}
+function calcBF(){
+  const wa=parseFloat(document.getElementById("f-wa").value),ne=parseFloat(document.getElementById("f-ne").value),
+        hi=parseFloat(document.getElementById("f-hi").value)||0,ht=parseFloat(document.getElementById("f-ht").value),res=document.getElementById("bf-res");
+  if(!wa||!ne||!ht){res.style.display="none";return;}
+  if(wa<=ne){document.getElementById("bf-v").textContent="!";document.getElementById("bf-cat").textContent="الخصر يجب أن يكون أكبر من الرقبة";res.style.display="block";return;}
+  let bf=hi>0?163.205*Math.log10(wa+hi-ne)-97.684*Math.log10(ht)-78.387:86.01*Math.log10(wa-ne)-70.041*Math.log10(ht)+36.76;
+  bf=Math.max(2,Math.min(55,bf));
+  document.getElementById("bf-v").textContent=bf.toFixed(1);
+  const cats=[[6,"أقل من المعدل ⚠️"],[14,"رياضي ممتاز 🏆"],[18,"لياقة ممتازة 💪"],[25,"لياقة جيدة ✅"],[32,"متوسط"],[38,"فوق المتوسط"]];
+  let cat="مرتفع — يُنصح بالتخفيف";
+  for(const [lim,lbl] of cats){if(bf<lim){cat=lbl;break;}}
+  document.getElementById("bf-cat").textContent="التصنيف: "+cat; res.style.display="block";
+}
+</script>
+{% endblock %}

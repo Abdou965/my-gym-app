@@ -1,0 +1,46 @@
+{% if prev_sets %}
+{% set best = prev_sets|sort(attribute='weight', reverse=true)|first %}
+<div class="card card-y" style="margin-bottom:9px;padding:9px 12px">
+  <div style="font-size:9px;color:var(--txt2);margin-bottom:2px">📈 أفضل سابق لهذا التمرين</div>
+  <div style="font-size:17px;font-weight:900;color:var(--ac)">{{ best.weight or "—" }} كجم × {{ best.reps or "—" }} تكرار</div>
+  <div style="font-size:9px;color:var(--txt2)">{{ prev_workout.date.strftime("%Y-%m-%d") }}</div>
+</div>
+{% endif %}
+
+<div class="card" style="padding:10px">
+  <div style="display:grid;grid-template-columns:26px 1fr 1fr 1fr 30px;gap:4px;font-size:9px;color:var(--txt2);text-align:center;margin-bottom:5px">
+    <div>#</div><div>كجم</div><div>تكرار</div><div>RIR</div><div>✓</div>
+  </div>
+
+  {% for i in range([sets|length, current.target_sets]|max) %}
+  {% set s = sets[i] if i < sets|length else None %}
+  <div class="sr" style="display:grid;grid-template-columns:26px 1fr 1fr 1fr 30px;gap:4px;align-items:center;margin-bottom:6px">
+    <input type="hidden" name="exercise_id" value="{{ current.exercise.id }}">
+    <input type="hidden" name="set_index" value="{{ i }}">
+    <input type="hidden" name="ex_index" value="{{ ex_index }}">
+    <div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:1px solid var(--bdr);
+         {% if s and s.reps and s.weight %}background:var(--ac);color:#000;border-color:var(--ac)
+         {% else %}background:var(--bg4);color:var(--txt2){% endif %}">{{ i+1 }}</div>
+    <input class="inp" style="text-align:center;padding:7px 2px;font-size:13px;font-weight:700" type="number" step="0.5" inputmode="decimal"
+           name="weight" placeholder="—" value="{{ s.weight if s and s.weight else '' }}"
+           hx-post="/session/{{ workout.id }}/log-set" hx-trigger="change" hx-include="closest .sr" hx-target="#set-rows-wrap" hx-swap="innerHTML">
+    <input class="inp" style="text-align:center;padding:7px 2px;font-size:13px;font-weight:700" type="number" inputmode="numeric"
+           name="reps" placeholder="—" value="{{ s.reps if s and s.reps else '' }}"
+           hx-post="/session/{{ workout.id }}/log-set" hx-trigger="change" hx-include="closest .sr" hx-target="#set-rows-wrap" hx-swap="innerHTML">
+    <input class="inp" style="text-align:center;padding:7px 2px;font-size:13px;font-weight:700" type="number" min="0" max="4" inputmode="numeric"
+           name="rir" placeholder="RIR" value="{{ s.rir if s and s.rir is not none else '' }}"
+           hx-post="/session/{{ workout.id }}/log-set" hx-trigger="change" hx-include="closest .sr" hx-target="#set-rows-wrap" hx-swap="innerHTML">
+    {% if s %}
+    <button type="button" hx-delete="/session/{{ workout.id }}/set/{{ s.id }}"
+            hx-vals='{"exercise_id": {{ current.exercise.id }}, "ex_index": {{ ex_index }} }'
+            hx-target="#set-rows-wrap" hx-swap="innerHTML"
+            style="background:none;border:none;color:var(--txt3);font-size:14px;cursor:pointer">×</button>
+    {% else %}<div></div>{% endif %}
+  </div>
+  {% endfor %}
+
+  <button class="btn btn-o" style="margin-top:6px;font-size:12px;padding:8px" type="button"
+          hx-post="/session/{{ workout.id }}/add-set"
+          hx-vals='{"exercise_id": {{ current.exercise.id }}, "ex_index": {{ ex_index }} }'
+          hx-target="#set-rows-wrap" hx-swap="innerHTML">+ مجموعة</button>
+</div>

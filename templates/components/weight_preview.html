@@ -1,0 +1,24 @@
+{% if weights %}
+  {% set last = weights[0] %}
+  <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-size:11px;color:var(--txt2)">آخر وزن مسجل</div>
+      <div style="font-size:20px;font-weight:900;color:var(--ac)">{{ last.weight }} كجم</div>
+    </div>
+    <div style="text-align:left">
+      {% if weights|length > 1 %}
+        {% set prev = weights[1] %}
+        {% set diff = (last.weight - prev.weight)|round(1) %}
+        <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;
+          {% if diff > 0 %}background:rgba(46,204,113,.12);color:var(--grn)
+          {% elif diff < 0 %}background:rgba(255,77,90,.12);color:var(--red)
+          {% else %}background:var(--bg4);color:var(--txt2){% endif %}">
+          {{ '↑' if diff > 0 else ('↓' if diff < 0 else '=') }} {{ diff|abs }} كجم
+        </span>
+      {% endif %}
+      <div style="font-size:9px;color:var(--txt2);margin-top:3px">{{ last.date.strftime("%Y-%m-%d") }}</div>
+    </div>
+  </div>
+{% else %}
+  <div style="font-size:11px;color:var(--txt2);text-align:center;padding:6px 0">لا يوجد وزن مسجل بعد</div>
+{% endif %}

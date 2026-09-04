@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="margin-bottom:11px">السجل</h2>
+{% if not workouts %}
+<div class="empty">لا توجد جلسات بعد.<br>ابدأ تدريبك الأول!</div>
+{% else %}
+{% for w in workouts %}
+<a href="/history/{{ w.id }}" class="hc">
+  <div class="hd">{{ w.date.strftime("%Y-%m-%d %H:%M") }}</div>
+  <div class="hn">{{ w.day_name }}</div>
+  <div class="hs">
+    <div class="hst"><b>{{ w.volume|round }}</b> كجم</div>
+    <div class="hst"><b>{{ (w.duration_seconds/60)|round }}</b> د</div>
+    {% if w.readiness_score %}<div class="hst">جاهزية: <b>{{ w.readiness_score }}/5</b></div>{% endif %}
+  </div>
+  {% if w.notes %}<div style="font-size:11px;color:var(--txt2);margin-top:5px;font-style:italic">"{{ w.notes }}"</div>{% endif %}
+</a>
+{% endfor %}
+{% endif %}
+{% endblock %}

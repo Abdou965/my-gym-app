@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="exercise-panel-wrap">
+  {% include "components/exercise_panel.html" %}
+</div>
+
+<div class="r2" style="gap:7px;margin-top:7px">
+  <button class="btn btn-r" onclick="document.getElementById('finish-modal').style.display='flex'">إنهاء الجلسة</button>
+  <button class="btn btn-o" onclick="document.getElementById('timer-modal').style.display='flex'">⏱ مؤقت الراحة</button>
+</div>
+
+<!-- FINISH MODAL -->
+<div id="finish-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:300;align-items:flex-end;justify-content:center">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:16px 14px 34px;width:100%;max-width:480px;border:1px solid var(--bdr)">
+    <div style="width:30px;height:3px;background:var(--bg4);border-radius:2px;margin:0 auto 14px"></div>
+    <div style="font-size:15px;font-weight:900;margin-bottom:12px">🏆 إنهاء الجلسة</div>
+    <form method="post" action="/session/{{ workout.id }}/finish">
+      <label class="inp-lbl">تقييم الجاهزية / التعافي (1-5)</label>
+      <select class="inp" name="readiness_score" style="margin-bottom:10px">
+        <option value="">— بدون تقييم —</option>
+        <option value="1">1 — منهك جداً</option>
+        <option value="2">2 — متعب</option>
+        <option value="3">3 — عادي</option>
+        <option value="4">4 — جيد</option>
+        <option value="5">5 — ممتاز</option>
+      </select>
+      <label class="inp-lbl">ملاحظة على الجلسة (اختياري)</label>
+      <textarea class="inp" name="notes" placeholder="كيف كانت الجلسة؟" style="min-height:70px;margin-bottom:12px"></textarea>
+      <button class="btn btn-y" type="submit">💾 حفظ الجلسة</button>
+    </form>
+    <button class="btn btn-o" style="margin-top:7px;font-size:12px" onclick="document.getElementById('finish-modal').style.display='none'">العودة للجلسة</button>
+  </div>
+</div>
+
+<!-- TIMER MODAL -->
+<div id="timer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:300;align-items:flex-end;justify-content:center">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:16px 14px 34px;width:100%;max-width:480px;border:1px solid var(--bdr)">
+    <div style="width:30px;height:3px;background:var(--bg4);border-radius:2px;margin:0 auto 14px"></div>
+    <div style="font-size:15px;font-weight:900;margin-bottom:12px">⏱ مؤقت الراحة</div>
+    <div id="timer-disp" style="font-family:'Barlow Condensed',sans-serif;font-size:88px;font-weight:900;text-align:center;color:var(--ac);line-height:1;padding:14px 0">01:30</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0">
+      <button class="dchip" onclick="TM.set(30)">30ث</button>
+      <button class="dchip on" onclick="TM.set(90)">90ث</button>
+      <button class="dchip" onclick="TM.set(120)">2د</button>
+      <button class="dchip" onclick="TM.set(180)">3د</button>
+    </div>
+    <div class="r2" style="gap:7px;margin-top:10px">
+      <button class="btn btn-y" id="timer-tog" onclick="TM.toggle()">▶ ابدأ</button>
+      <button class="btn btn-o" onclick="document.getElementById('timer-modal').style.display='none'">✕ إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TM={base:90,rem:90,running:false,iv:null,
+  get $d(){return document.getElementById("timer-disp");},
+  set(s){this.stop();this.base=s;this.rem=s;this._r();
+    document.querySelectorAll("#timer-modal .dchip").forEach(b=>b.classList.remove("on"));
+    event.target.classList.add("on");},
+  start(){if(this.running)return;this.running=true;document.getElementById("timer-tog").textContent="⏸ إيقاف";
+    this.iv=setInterval(()=>{if(this.rem>0)this.rem--;this._r();
+      if(this.rem<=0){this.stop();setTimeout(()=>{this.rem=this.base;this._r();},1200);
+        try{const c=new(window.AudioContext||window.webkitAudioContext)();
+          [0,.15,.3].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+            o.frequency.value=880;g.gain.setValueAtTime(.3,c.currentTime+t);
+            g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t+.12);
+            o.start(c.currentTime+t);o.stop(c.currentTime+t+.12);});}catch(e){}
+      }},1000);},
+  stop(){clearInterval(this.iv);this.running=false;document.getElementById("timer-tog").textContent="▶ ابدأ";},
+  toggle(){this.running?this.stop():this.start();},
+  _r(){const m=Math.floor(Math.max(0,this.rem)/60),s=Math.max(0,this.rem)%60;
+    this.$d.textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");}
+};
+window.addEventListener("beforeunload",e=>{e.preventDefault();e.returnValue="";});
+</script>
+{% endblock %}

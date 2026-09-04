@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+{% if not workout %}
+<div class="empty">الجلسة غير موجودة</div>
+{% else %}
+<div style="font-size:10px;color:var(--txt2);margin-bottom:8px">{{ workout.date.strftime("%Y-%m-%d %H:%M") }}</div>
+<h2 style="margin-bottom:8px">{{ workout.day_name }}</h2>
+<div class="s3" style="margin-bottom:12px">
+  <div class="sbox"><div class="sval" style="font-size:20px">{{ workout.volume|round }}</div><div class="slbl">كجم</div></div>
+  <div class="sbox"><div class="sval" style="font-size:20px">{{ (workout.duration_seconds/60)|round }}</div><div class="slbl">دقيقة</div></div>
+  <div class="sbox"><div class="sval" style="font-size:20px">{{ detail|map(attribute='sets')|map('length')|sum }}</div><div class="slbl">مجموعة</div></div>
+</div>
+
+{% for item in detail %}
+<div class="card">
+  <div style="font-size:12px;font-weight:700;color:var(--ac);margin-bottom:5px">{{ item.exercise.name }}</div>
+  {% for s in item.sets %}
+  <div style="font-size:11px;color:var(--txt2);padding:2px 0;display:flex;gap:10px">
+    <span style="color:var(--txt3)">{{ loop.index }}</span>
+    <span>{{ s.weight or "—" }} كجم</span>
+    <span>× {{ s.reps or "—" }}</span>
+    {% if s.rir is not none %}<span style="color:var(--txt3)">RIR {{ s.rir }}</span>{% endif %}
+    {% if not s.is_effective %}<span style="color:var(--txt3)">(إحماء)</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+{% if workout.notes %}
+<div class="card" style="font-size:12px;color:var(--txt2);font-style:italic">"{{ workout.notes }}"</div>
+{% endif %}
+{% endif %}
+{% endblock %}

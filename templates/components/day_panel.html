@@ -1,0 +1,34 @@
+<div class="cwrap" id="day-chips">
+  {% for d in program.days %}
+  <a class="dchip {{ 'on' if loop.index0 == day_index }}"
+     hx-post="/workout/select-day" hx-vals='{"day_index": {{ loop.index0 }} }'
+     hx-target="#day-panel" hx-swap="outerHTML" href="#">
+     {{ '🧘' if d.is_rest else 'يوم ' ~ loop.index }}
+  </a>
+  {% endfor %}
+</div>
+
+<div id="day-panel">
+  {% if day %}
+  <div style="font-size:13px;font-weight:900;color:var(--ac);margin-bottom:9px">
+    {{ day.name }}{% if day.muscles %} — {{ day.muscles }}{% endif %}
+  </div>
+  {% if day.is_rest %}
+    <div class="empty" style="padding:30px">🧘<br><br>يوم راحة وتعافٍ<br><small style="color:var(--txt3)">نم جيداً، ارتح، وتناول بروتيناً كافياً</small></div>
+  {% else %}
+    {% for link in day.exercises %}
+    <div class="exi">
+      <div class="exic">⚡</div>
+      <div class="exin"><div class="exn">{{ link.exercise.name }}</div><div class="exm">{{ link.exercise.muscle_group }}</div></div>
+      <div class="exb">{{ link.target_sets }}×{{ link.exercise.min_reps }}–{{ link.exercise.max_reps }}</div>
+    </div>
+    {% endfor %}
+    <form method="post" action="/workout/start">
+      <input type="hidden" name="day_id" value="{{ day.id }}">
+      <button class="btn btn-y" style="margin-top:8px" type="submit">▶ ابدأ الجلسة</button>
+    </form>
+  {% endif %}
+  {% else %}
+  <div class="empty">لا يوجد يوم محدد</div>
+  {% endif %}
+</div>
