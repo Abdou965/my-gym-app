@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
+<form method="post" action="/session/{{ workout.id }}/readiness" style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+  <span class="rdy-pill">⚡ جاهزية اليوم</span>
+  <select class="inp" name="score" onchange="this.form.submit()" style="padding:6px 10px;font-size:12px;width:auto;flex:1">
+    {% for n, lb in [(1,'منهك جداً'),(2,'متعب'),(3,'عادي'),(4,'جيد'),(5,'ممتاز')] %}
+    <option value="{{ n }}" {{ 'selected' if workout.readiness_score == n }}>{{ n }} — {{ lb }}</option>
+    {% endfor %}
+  </select>
+</form>
 <div id="exercise-panel-wrap">
   {% include "components/exercise_panel.html" %}
 </div>
@@ -10,19 +18,19 @@
 </div>
 
 <!-- FINISH MODAL -->
-<div id="finish-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:300;align-items:flex-end;justify-content:center">
-  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:16px 14px 34px;width:100%;max-width:480px;border:1px solid var(--bdr)">
+<div id="finish-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:300;align-items:flex-end;justify-content:center">
+  <div class="sheet" style="border-radius:26px 26px 0 0;padding:16px 14px 34px;width:100%;max-width:480px;border:1px solid var(--bdr2)">
     <div style="width:30px;height:3px;background:var(--bg4);border-radius:2px;margin:0 auto 14px"></div>
     <div style="font-size:15px;font-weight:900;margin-bottom:12px">🏆 إنهاء الجلسة</div>
     <form method="post" action="/session/{{ workout.id }}/finish">
       <label class="inp-lbl">تقييم الجاهزية / التعافي (1-5)</label>
       <select class="inp" name="readiness_score" style="margin-bottom:10px">
         <option value="">— بدون تقييم —</option>
-        <option value="1">1 — منهك جداً</option>
-        <option value="2">2 — متعب</option>
-        <option value="3">3 — عادي</option>
-        <option value="4">4 — جيد</option>
-        <option value="5">5 — ممتاز</option>
+        <option value="1" {{ 'selected' if workout.readiness_score == 1 }}>1 — منهك جداً</option>
+        <option value="2" {{ 'selected' if workout.readiness_score == 2 }}>2 — متعب</option>
+        <option value="3" {{ 'selected' if workout.readiness_score == 3 }}>3 — عادي</option>
+        <option value="4" {{ 'selected' if workout.readiness_score == 4 }}>4 — جيد</option>
+        <option value="5" {{ 'selected' if workout.readiness_score == 5 }}>5 — ممتاز</option>
       </select>
       <label class="inp-lbl">ملاحظة على الجلسة (اختياري)</label>
       <textarea class="inp" name="notes" placeholder="كيف كانت الجلسة؟" style="min-height:70px;margin-bottom:12px"></textarea>
@@ -33,8 +41,8 @@
 </div>
 
 <!-- TIMER MODAL -->
-<div id="timer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:300;align-items:flex-end;justify-content:center">
-  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:16px 14px 34px;width:100%;max-width:480px;border:1px solid var(--bdr)">
+<div id="timer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:300;align-items:flex-end;justify-content:center">
+  <div class="sheet" style="border-radius:26px 26px 0 0;padding:16px 14px 34px;width:100%;max-width:480px;border:1px solid var(--bdr2)">
     <div style="width:30px;height:3px;background:var(--bg4);border-radius:2px;margin:0 auto 14px"></div>
     <div style="font-size:15px;font-weight:900;margin-bottom:12px">⏱ مؤقت الراحة</div>
     <div id="timer-disp" style="font-family:'Barlow Condensed',sans-serif;font-size:88px;font-weight:900;text-align:center;color:var(--ac);line-height:1;padding:14px 0">01:30</div>

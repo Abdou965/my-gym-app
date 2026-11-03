@@ -4,6 +4,10 @@
 <div class="card" style="border-right:3px solid var(--red);font-size:12px;color:var(--red);margin-bottom:10px">
   ⚠️ لا يمكن بدء جلسة في يوم راحة. اختر يوماً آخر من الأيام أدناه.
 </div>
+{% elif error == "cardio_day" %}
+<div class="card" style="border-right:3px solid var(--cy);font-size:12px;color:var(--cy);margin-bottom:10px">
+  🏃‍♂️ يوم الكارديو لا يحتاج تتبع مجموعات — مارس نشاطك الحر واستمتع.
+</div>
 {% endif %}
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
   <h2>البرنامج</h2>

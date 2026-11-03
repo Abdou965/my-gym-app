@@ -51,6 +51,8 @@ class ProgramDay(Base):
     name = Column(String, nullable=False)
     muscles = Column(String, default="")
     is_rest = Column(Boolean, default=False)
+    # يوم كارديو: نشاط حر لا يُتتبَّع بالمجموعات (لا جلسة تمارين)
+    is_cardio = Column(Boolean, default=False)
 
     program = relationship("Program", back_populates="days")
     exercises = relationship(

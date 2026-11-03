@@ -4,8 +4,8 @@
 <a href="/workout" class="hero">
   <div class="hero-lbl">{{ today_label }} — {{ now().strftime("%Y-%m-%d") }}</div>
   <div class="hero-name">{{ today_day.name }}</div>
-  <div class="hero-sub">{% if today_day.is_rest %}يوم راحة وتعافٍ 🧘{% else %}العضلات: {{ today_day.muscles }}{% endif %}</div>
-  <div class="hero-chip">{% if today_day.is_rest %}🧘 يوم راحة{% else %}▶ ابدأ الجلسة ({{ today_day.exercises|length }} تمارين){% endif %}</div>
+  <div class="hero-sub">{% if today_day.is_rest %}يوم راحة وتعافٍ 🧘{% elif today_day.is_cardio %}كارديو حر: {{ today_day.muscles }} 🏃‍♂️{% else %}العضلات: {{ today_day.muscles }}{% endif %}</div>
+  <div class="hero-chip">{% if today_day.is_rest %}🧘 يوم راحة{% elif today_day.is_cardio %}🏃‍♂️ كارديو اليوم{% else %}▶ ابدأ الجلسة ({{ today_day.exercises|length }} تمارين){% endif %}</div>
 </a>
 {% else %}
 <div class="empty">لم يتم اختيار برنامج بعد.<br><a href="/workout" style="color:var(--ac)">اذهب لإعداد برنامجك →</a></div>

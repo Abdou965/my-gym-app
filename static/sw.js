@@ -1,4 +1,4 @@
-const CACHE = "ironcore-py-v1";
+const CACHE = "ironcore-py-v2";
 const FILES = ["/", "/static/manifest.json"];
 
 self.addEventListener("install", e => {

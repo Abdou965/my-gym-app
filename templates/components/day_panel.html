@@ -3,7 +3,7 @@
   <a class="dchip {{ 'on' if loop.index0 == day_index }}"
      hx-post="/workout/select-day" hx-vals='{"day_index": {{ loop.index0 }} }'
      hx-target="#day-panel" hx-swap="outerHTML" href="#">
-     {{ '🧘' if d.is_rest else 'يوم ' ~ loop.index }}
+     {{ '🧘' if d.is_rest else ('🏃‍♂️' if d.is_cardio else 'يوم ' ~ loop.index) }}
   </a>
   {% endfor %}
 </div>
@@ -15,6 +15,12 @@
   </div>
   {% if day.is_rest %}
     <div class="empty" style="padding:30px">🧘<br><br>يوم راحة وتعافٍ<br><small style="color:var(--txt3)">نم جيداً، ارتح، وتناول بروتيناً كافياً</small></div>
+  {% elif day.is_cardio %}
+    <div class="card cardio-hero">
+      <div class="big">🏃‍♂️</div>
+      <div style="font-size:15px;font-weight:900;margin:10px 0 4px">يوم كارديو اختياري</div>
+      <div style="font-size:12px;color:var(--txt2);line-height:1.9">كرة قدم • سباحة • عدو<br>٣٠–٤٥ دقيقة بشدة متوسطة، واحرص على الإحماء والتمدد.</div>
+    </div>
   {% else %}
     {% for link in day.exercises %}
     <div class="exi">
@@ -25,6 +31,13 @@
     {% endfor %}
     <form method="post" action="/workout/start">
       <input type="hidden" name="day_id" value="{{ day.id }}">
+      <div class="sec" style="margin:14px 0 4px"><span>كيف جاهزيتك اليوم؟</span></div>
+      <div class="rdy">
+        {% for n, ic, lb in [(1,'😵','منهك'),(2,'😮‍💨','متعب'),(3,'😐','عادي'),(4,'💪','جيد'),(5,'🔥','ممتاز')] %}
+        <label><input type="radio" name="readiness" value="{{ n }}" {{ 'checked' if n == 3 }}><span>{{ ic }}<small>{{ lb }}</small></span></label>
+        {% endfor %}
+      </div>
+      <div style="font-size:10px;color:var(--txt2);margin-bottom:6px;line-height:1.7">تُستخدم لتعديل أحمال اليوم: جاهزية منخفضة = تأجيل الزيادة أو تخفيف خفيف.</div>
       <button class="btn btn-y" style="margin-top:8px" type="submit">▶ ابدأ الجلسة</button>
     </form>
   {% endif %}

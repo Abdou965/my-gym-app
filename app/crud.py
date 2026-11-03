@@ -12,51 +12,68 @@ DAYS_AR = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء
 
 
 # ── SEEDING ──────────────────────────────────────────────
-def seed_if_empty(db: Session):
-    if db.query(models.Program).count() > 0:
+def ensure_schema(engine):
+    """Lightweight migration: SQLite's create_all() never adds columns to
+    existing tables, so add program_days.is_cardio if an older DB lacks it."""
+    from sqlalchemy import inspect, text
+    insp = inspect(engine)
+    if "program_days" not in insp.get_table_names():
         return
-    exercise_cache = {}
+    cols = {c["name"] for c in insp.get_columns("program_days")}
+    if "is_cardio" not in cols:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE program_days ADD COLUMN is_cardio BOOLEAN DEFAULT 0"))
 
-    def get_or_create_exercise(data: dict) -> models.Exercise:
-        if data["name"] in exercise_cache:
-            return exercise_cache[data["name"]]
-        exist = db.query(models.Exercise).filter_by(name=data["name"]).first()
-        if exist:
-            exercise_cache[data["name"]] = exist
-            return exist
-        obj = models.Exercise(**data, is_custom=False)
-        db.add(obj)
+
+def _get_or_create_exercise(db: Session, cache: dict, data: dict) -> models.Exercise:
+    if data["name"] in cache:
+        return cache[data["name"]]
+    exist = db.query(models.Exercise).filter_by(name=data["name"]).first()
+    if exist:
+        cache[data["name"]] = exist
+        return exist
+    obj = models.Exercise(**data, is_custom=False)
+    db.add(obj)
+    db.flush()
+    cache[data["name"]] = obj
+    return obj
+
+
+def _create_program(db: Session, prog_data: dict, cache: dict) -> models.Program:
+    program = models.Program(name=prog_data["name"])
+    db.add(program)
+    db.flush()
+    for day_idx, day_data in enumerate(prog_data["days"]):
+        day = models.ProgramDay(
+            program_id=program.id, order_index=day_idx,
+            name=day_data["name"], muscles=day_data["muscles"],
+            is_rest=day_data["is_rest"], is_cardio=day_data.get("is_cardio", False),
+        )
+        db.add(day)
         db.flush()
-        exercise_cache[data["name"]] = obj
-        return obj
+        for ex_idx, (ex_data, target_sets) in enumerate(day_data["exercises"]):
+            exercise = _get_or_create_exercise(db, cache, ex_data)
+            db.add(models.ProgramDayExercise(
+                day_id=day.id, exercise_id=exercise.id,
+                order_index=ex_idx, target_sets=target_sets,
+            ))
+    return program
 
+
+def seed_if_empty(db: Session):
+    """Fresh DB: seed every program. Existing DB: add any program from
+    seed_data that is missing by name (never deletes or edits old ones)."""
+    cache: dict = {}
+    existing = {name for (name,) in db.query(models.Program.name).all()}
     for prog_data in PROGRAMS:
-        program = models.Program(name=prog_data["name"])
-        db.add(program)
-        db.flush()
-        for day_idx, day_data in enumerate(prog_data["days"]):
-            day = models.ProgramDay(
-                program_id=program.id, order_index=day_idx,
-                name=day_data["name"], muscles=day_data["muscles"],
-                is_rest=day_data["is_rest"],
-            )
-            db.add(day)
-            db.flush()
-            for ex_idx, (ex_data, target_sets) in enumerate(day_data["exercises"]):
-                exercise = get_or_create_exercise(ex_data)
-                link = models.ProgramDayExercise(
-                    day_id=day.id, exercise_id=exercise.id,
-                    order_index=ex_idx, target_sets=target_sets,
-                )
-                db.add(link)
-
+        if prog_data["name"] not in existing:
+            _create_program(db, prog_data, cache)
     db.commit()
 
-    # default settings row pointing at the first program
-    first_program = db.query(models.Program).first()
-    settings = models.Settings(id=1, current_program_id=first_program.id, current_day_index=0)
-    db.add(settings)
-    db.commit()
+    if not db.query(models.Settings).filter_by(id=1).first():
+        first_program = db.query(models.Program).first()
+        db.add(models.Settings(id=1, current_program_id=first_program.id, current_day_index=0))
+        db.commit()
 
 
 # ── SETTINGS / PROGRAM SELECTION ────────────────────────
@@ -233,7 +250,9 @@ def finish_workout(db: Session, workout_id: int, data: schemas.FinishWorkoutIn) 
     sets = get_sets_for_workout(db, workout_id)
     workout.volume = sum((s.weight or 0) * (s.reps or 0) for s in sets)
     workout.duration_seconds = int((datetime.utcnow() - workout.date).total_seconds())
-    workout.readiness_score = data.readiness_score
+    # لا نمسح الجاهزية المسجّلة في بداية الجلسة إذا ترك المستخدم الحقل فارغاً
+    if data.readiness_score is not None:
+        workout.readiness_score = data.readiness_score
     workout.notes = data.notes
     workout.finished = True
     db.commit()
@@ -335,12 +354,27 @@ def get_1rm_history(db: Session, exercise_id: int, limit: int = 10):
     return points
 
 
-def get_progression_suggestion(db: Session, exercise: models.Exercise) -> dict:
+def get_progression_suggestion(db: Session, exercise: models.Exercise,
+                               readiness: int | None = None) -> dict:
+    """Double-progression suggestion, modulated by the current session's
+    readiness score (1-5, set when the session starts)."""
     _, sets = get_last_finished_sets_for_exercise(db, exercise.id)
     payload = [{"weight": s.weight, "reps": s.reps, "rir": s.rir, "is_effective": s.is_effective} for s in sets]
     return logic.next_session_suggestion(
-        exercise.min_reps, exercise.max_reps, exercise.increment_weight, payload
+        exercise.min_reps, exercise.max_reps, exercise.increment_weight, payload,
+        readiness=readiness,
     )
+
+
+def set_workout_readiness(db: Session, workout_id: int, score: int | None) -> models.Workout | None:
+    """Store the pre-session readiness (1-5) on the active workout."""
+    workout = db.query(models.Workout).get(workout_id)
+    if not workout or workout.finished:
+        return workout
+    workout.readiness_score = score if score and 1 <= score <= 5 else None
+    db.commit()
+    db.refresh(workout)
+    return workout
 
 
 # ── BODY WEIGHT ──────────────────────────────────────────

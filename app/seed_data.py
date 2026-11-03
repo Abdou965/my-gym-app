@@ -46,6 +46,12 @@ _E = {
     "shrugs": ("Shrugs — شراق", "شراوي", 10, 15, 2.5, ""),
     "front_raise": ("Front Raise", "كتف أمامي", 12, 15, 1.0, ""),
     "rear_delt_machine": ("Rear Delt Machine", "دالية خلفية", 15, 20, 2.0, ""),
+    # ── إضافات "البرنامج المتقدم المخصص" ──
+    "wrist_curl": ("Wrist Curl — ثني الرسغ", "سواعد", 12, 20, 1.0, "اسند الساعد على مقعد، حركة الرسغ فقط"),
+    "rev_wrist_curl": ("Reverse Wrist Curl — رسغ عكسي", "سواعد", 12, 20, 1.0, "كفّ للأسفل، وزن خفيف وتحكم كامل"),
+    "rev_curl": ("Reverse Curl — كيرل عكسي", "سواعد / بايسبس", 10, 15, 1.0, "قبضة علوية، الكوعان ثابتان"),
+    "abduction": ("Hip Abduction — فتح الورك", "ردف جانبي", 12, 20, 2.5, "ثبّت الحوض، اضغط للخارج ثم تحكم في العودة"),
+    "seated_calf": ("Seated Calf Raise", "ربلة (سولياس)", 12, 20, 2.5, "ركبة بزاوية 90°، اطالة كاملة وتوقف ثانية في القمة"),
 }
 
 
@@ -141,3 +147,35 @@ PROGRAMS = [
         ],
     },
 ]
+
+
+# ── البرنامج المتقدم المخصص ───────────────────────────────────────────
+# ملاحظة: ترتيب الأيام = الأحد..السبت (index 0 = الأحد) ليتوافق مع
+# crud.get_today_suggested_day التي تُدوّر حسب يوم الأسبوع الفعلي.
+ADVANCED_PROGRAM_NAME = "البرنامج المتقدم المخصص"
+
+ADVANCED_PROGRAM = {
+    "name": ADVANCED_PROGRAM_NAME,
+    "days": [
+        {"name": "الأحد — صدر / ظهر / كتف (الجزء 1: ثقيل)", "muscles": "صدر / ظهر / كتف", "is_rest": False,
+         "exercises": [(ex("bench"), 4), (ex("pullup"), 4), (ex("ohp"), 3), (ex("bb_row"), 3),
+                       (ex("incline_db"), 3), (ex("lat_raise"), 3), (ex("face_pull"), 3)]},
+        {"name": "الإثنين — ذراعين وسواعد", "muscles": "بايسبس / ترايسبس / سواعد", "is_rest": False,
+         "exercises": [(ex("bb_curl"), 3), (ex("skull"), 3), (ex("incline_curl"), 3), (ex("oh_ext"), 3),
+                       (ex("hammer_curl"), 3), (ex("rev_curl"), 3), (ex("wrist_curl"), 3),
+                       (ex("rev_wrist_curl"), 3)]},
+        {"name": "🧘 الثلاثاء — راحة وتعافٍ", "muscles": "", "is_rest": True, "exercises": []},
+        {"name": "الأربعاء — صدر / ظهر / كتف (الجزء 2: حجم)", "muscles": "صدر / ظهر / كتف", "is_rest": False,
+         "exercises": [(ex("incline_bb"), 4), (ex("chest_row"), 4), (ex("db_shoulder"), 3), (ex("pec_deck"), 3),
+                       (ex("seated_row"), 3), (ex("cable_lat_raise"), 4), (ex("rear_delt"), 3)]},
+        {"name": "الخميس — أرجل كاملة", "muscles": "فخذ أمامي / خلفي / ردف / سمانة", "is_rest": False,
+         "exercises": [(ex("squat"), 4), (ex("rdl"), 3), (ex("leg_press"), 3), (ex("leg_ext"), 3),
+                       (ex("leg_curl"), 3), (ex("hip_thrust"), 3), (ex("abduction"), 3),
+                       (ex("calf"), 4), (ex("seated_calf"), 3)]},
+        {"name": "🧘 الجمعة — راحة وتعافٍ", "muscles": "", "is_rest": True, "exercises": []},
+        {"name": "🏃‍♂️ السبت — كارديو", "muscles": "كرة قدم / سباحة / عدو (اختياري)",
+         "is_rest": False, "is_cardio": True, "exercises": []},
+    ],
+}
+
+PROGRAMS.append(ADVANCED_PROGRAM)

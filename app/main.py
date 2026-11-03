@@ -12,6 +12,7 @@ from app.database import Base, engine, get_db
 from app import crud, schemas, logic, models
 
 Base.metadata.create_all(bind=engine)
+crud.ensure_schema(engine)  # يضيف أعمدة جديدة لقواعد SQLite القديمة
 
 app = FastAPI(title="IronCore")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -94,14 +95,19 @@ def select_day(request: Request, day_index: int = Form(...), db: Session = Depen
 
 
 @app.post("/workout/start")
-def start_workout(day_id: int = Form(...), db: Session = Depends(get_db)):
+def start_workout(day_id: int = Form(...), readiness: str = Form(""),
+                  db: Session = Depends(get_db)):
     active = crud.get_active_workout(db)
     if active:
         return RedirectResponse(f"/session/{active.id}", status_code=303)
     day = db.query(models.ProgramDay).get(day_id)
     if not day or day.is_rest:
         return RedirectResponse("/workout?error=rest_day", status_code=303)
+    if day.is_cardio:
+        return RedirectResponse("/workout?error=cardio_day", status_code=303)
     workout = crud.start_workout(db, day_id)
+    if readiness.strip().isdigit():
+        crud.set_workout_readiness(db, workout.id, int(readiness))
     return RedirectResponse(f"/session/{workout.id}", status_code=303)
 
 
@@ -147,7 +153,7 @@ def session_page(request: Request, workout_id: int, ex: int = 0, db: Session = D
     prev_workout, prev_sets = crud.get_last_finished_sets_for_exercise(
         db, current["exercise"].id, exclude_workout_id=workout_id
     )
-    suggestion = crud.get_progression_suggestion(db, current["exercise"])
+    suggestion = crud.get_progression_suggestion(db, current["exercise"], readiness=workout.readiness_score)
     return render(
         request, "session.html", db=db, active_page="session",
         workout=workout, items=items, ex_index=ex, current=current,
@@ -165,7 +171,7 @@ def session_exercise_panel(request: Request, workout_id: int, ex_index: int, db:
     prev_workout, prev_sets = crud.get_last_finished_sets_for_exercise(
         db, current["exercise"].id, exclude_workout_id=workout_id
     )
-    suggestion = crud.get_progression_suggestion(db, current["exercise"])
+    suggestion = crud.get_progression_suggestion(db, current["exercise"], readiness=workout.readiness_score)
     return templates.TemplateResponse(
         request, "components/exercise_panel.html",
         {"workout": workout, "items": items, "ex_index": ex_index, "current": current,
@@ -245,6 +251,14 @@ def delete_set(
         {"workout": workout, "current": current, "sets": sets, "ex_index": ex_index,
          "prev_workout": prev_workout, "prev_sets": prev_sets}
     )
+
+
+@app.post("/session/{workout_id}/readiness")
+def update_readiness(workout_id: int, score: int = Form(...), db: Session = Depends(get_db)):
+    """Change today's readiness mid-session; the page reloads so every
+    suggestion is recomputed with the new score."""
+    crud.set_workout_readiness(db, workout_id, score)
+    return RedirectResponse(f"/session/{workout_id}", status_code=303)
 
 
 @app.post("/session/{workout_id}/finish")
