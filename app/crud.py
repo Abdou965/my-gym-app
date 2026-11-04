@@ -12,17 +12,32 @@ DAYS_AR = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء
 
 
 # ── SEEDING ──────────────────────────────────────────────
+# أعمدة أُضيفت بعد الإصدار الأول: (جدول، عمود، نوع SQL). BOOLEAN DEFAULT FALSE
+# يعمل على SQLite (3.23+) وPostgreSQL معاً.
+_NEW_COLUMNS = [
+    ("program_days", "is_cardio", "BOOLEAN DEFAULT FALSE"),
+    ("program_days", "note", "TEXT DEFAULT ''"),
+    ("program_day_exercises", "min_reps", "INTEGER"),
+    ("program_day_exercises", "max_reps", "INTEGER"),
+    ("program_day_exercises", "rest_min", "INTEGER"),
+    ("program_day_exercises", "rest_max", "INTEGER"),
+    ("program_day_exercises", "rir_target", "VARCHAR DEFAULT ''"),
+    ("program_day_exercises", "note", "TEXT DEFAULT ''"),
+]
+
+
 def ensure_schema(engine):
-    """Lightweight migration: SQLite's create_all() never adds columns to
-    existing tables, so add program_days.is_cardio if an older DB lacks it."""
+    """Lightweight migration: create_all() never adds columns to existing
+    tables, so add any column an older database is missing."""
     from sqlalchemy import inspect, text
     insp = inspect(engine)
-    if "program_days" not in insp.get_table_names():
-        return
-    cols = {c["name"] for c in insp.get_columns("program_days")}
-    if "is_cardio" not in cols:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE program_days ADD COLUMN is_cardio BOOLEAN DEFAULT 0"))
+    tables = set(insp.get_table_names())
+    for table, column, ddl in _NEW_COLUMNS:
+        if table not in tables:
+            continue
+        if column not in {c["name"] for c in insp.get_columns(table)}:
+            with engine.begin() as conn:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}"))
 
 
 def _get_or_create_exercise(db: Session, cache: dict, data: dict) -> models.Exercise:
@@ -39,6 +54,27 @@ def _get_or_create_exercise(db: Session, cache: dict, data: dict) -> models.Exer
     return obj
 
 
+def _link_spec(item) -> tuple:
+    """Normalise a seed entry: (exercise_dict, sets) or (exercise_dict, sets, overrides)."""
+    ex_data, target_sets = item[0], item[1]
+    o = item[2] if len(item) > 2 else {}
+    return ex_data, target_sets, {
+        "min_reps": o.get("min_reps"), "max_reps": o.get("max_reps"),
+        "rest_min": o.get("rest_min"), "rest_max": o.get("rest_max"),
+        "rir_target": o.get("rir_target", ""), "note": o.get("note", ""),
+    }
+
+
+def _fill_day_links(db: Session, cache: dict, day: models.ProgramDay, items: list):
+    for ex_idx, item in enumerate(items):
+        ex_data, target_sets, o = _link_spec(item)
+        exercise = _get_or_create_exercise(db, cache, ex_data)
+        db.add(models.ProgramDayExercise(
+            day_id=day.id, exercise_id=exercise.id,
+            order_index=ex_idx, target_sets=target_sets, **o,
+        ))
+
+
 def _create_program(db: Session, prog_data: dict, cache: dict) -> models.Program:
     program = models.Program(name=prog_data["name"])
     db.add(program)
@@ -48,16 +84,57 @@ def _create_program(db: Session, prog_data: dict, cache: dict) -> models.Program
             program_id=program.id, order_index=day_idx,
             name=day_data["name"], muscles=day_data["muscles"],
             is_rest=day_data["is_rest"], is_cardio=day_data.get("is_cardio", False),
+            note=day_data.get("note", ""),
         )
         db.add(day)
         db.flush()
-        for ex_idx, (ex_data, target_sets) in enumerate(day_data["exercises"]):
-            exercise = _get_or_create_exercise(db, cache, ex_data)
-            db.add(models.ProgramDayExercise(
-                day_id=day.id, exercise_id=exercise.id,
-                order_index=ex_idx, target_sets=target_sets,
-            ))
+        _fill_day_links(db, cache, day, day_data["exercises"])
     return program
+
+
+def _day_signature(day_name, muscles, is_rest, is_cardio, note, links) -> tuple:
+    return (day_name, muscles or "", bool(is_rest), bool(is_cardio), note or "", tuple(links))
+
+
+def sync_managed_programs(db: Session, cache: dict):
+    """Bring programs flagged "managed" in seed_data in line with the file.
+
+    Updates days IN PLACE (same ProgramDay ids, so workout history that
+    points at them stays valid) and rewrites only the exercise links, and
+    only when something actually differs. Other programs are never touched.
+    """
+    for prog_data in PROGRAMS:
+        if not prog_data.get("managed"):
+            continue
+        program = db.query(models.Program).filter_by(name=prog_data["name"]).first()
+        if not program:
+            continue  # will be created by seed_if_empty
+        days = list(program.days)
+        if len(days) != len(prog_data["days"]):
+            continue  # structure changed manually; leave it alone
+        for day, d in zip(days, prog_data["days"]):
+            want_links = []
+            for item in d["exercises"]:
+                ex_data, sets, o = _link_spec(item)
+                want_links.append((ex_data["name"], sets, o["min_reps"], o["max_reps"],
+                                   o["rest_min"], o["rest_max"], o["rir_target"], o["note"]))
+            have_links = [(l.exercise.name, l.target_sets, l.min_reps, l.max_reps,
+                           l.rest_min, l.rest_max, l.rir_target or "", l.note or "")
+                          for l in day.exercises]
+            want = _day_signature(d["name"], d["muscles"], d["is_rest"], d.get("is_cardio", False),
+                                  d.get("note", ""), want_links)
+            have = _day_signature(day.name, day.muscles, day.is_rest, day.is_cardio,
+                                  day.note, have_links)
+            if want == have:
+                continue
+            day.name, day.muscles = d["name"], d["muscles"]
+            day.is_rest, day.is_cardio = d["is_rest"], d.get("is_cardio", False)
+            day.note = d.get("note", "")
+            for link in list(day.exercises):
+                db.delete(link)
+            db.flush()
+            _fill_day_links(db, cache, day, d["exercises"])
+    db.commit()
 
 
 def seed_if_empty(db: Session):
@@ -69,6 +146,7 @@ def seed_if_empty(db: Session):
         if prog_data["name"] not in existing:
             _create_program(db, prog_data, cache)
     db.commit()
+    sync_managed_programs(db, cache)
 
     if not db.query(models.Settings).filter_by(id=1).first():
         first_program = db.query(models.Program).first()
@@ -189,18 +267,41 @@ def get_day_for_workout(db: Session, workout: models.Workout) -> models.ProgramD
     return None
 
 
+def _rir_gate(rir_target: str | None) -> int:
+    """Highest RIR still accepted for a load increase: the upper bound of the
+    exercise's target RIR (e.g. "1–3" -> 3). Falls back to 2."""
+    import re
+    nums = [int(n) for n in re.findall(r"\d+", rir_target or "")]
+    return max(nums) if nums else 2
+
+
+def _session_item(exercise: models.Exercise, target_sets: int, link=None) -> dict:
+    g = (lambda attr: getattr(link, attr, None)) if link else (lambda attr: None)
+    rest_min, rest_max = g("rest_min"), g("rest_max")
+    return {
+        "exercise": exercise,
+        "target_sets": target_sets,
+        "min_reps": g("min_reps") or exercise.min_reps,
+        "max_reps": g("max_reps") or exercise.max_reps,
+        "rest_min": rest_min, "rest_max": rest_max or rest_min,
+        "rir_target": g("rir_target") or "",
+        "note": g("note") or "",
+    }
+
+
 def get_session_exercise_list(db: Session, workout: models.Workout):
-    """Ordered list of {exercise, target_sets} for a workout: the
-    program day's exercises followed by any custom exercises the user
-    has added (custom ones are appended to every session, as in the
-    original client-only version)."""
+    """Ordered list of session items (exercise, target sets, rep range, rest,
+    target RIR, note): the program day's exercises followed by any custom
+    exercises the user has added (appended to every session, as in the
+    original client-only version). Rep range / rest / RIR come from the
+    program-day link when it overrides the exercise library defaults."""
     items = []
     day = get_day_for_workout(db, workout)
     if day:
         for link in day.exercises:
-            items.append({"exercise": link.exercise, "target_sets": link.target_sets})
+            items.append(_session_item(link.exercise, link.target_sets, link))
     for custom in get_custom_exercises(db):
-        items.append({"exercise": custom, "target_sets": 3})
+        items.append(_session_item(custom, 3))
     return items
 
 
@@ -355,14 +456,18 @@ def get_1rm_history(db: Session, exercise_id: int, limit: int = 10):
 
 
 def get_progression_suggestion(db: Session, exercise: models.Exercise,
-                               readiness: int | None = None) -> dict:
-    """Double-progression suggestion, modulated by the current session's
-    readiness score (1-5, set when the session starts)."""
+                               readiness: int | None = None,
+                               min_reps: int | None = None, max_reps: int | None = None,
+                               rir_target: str | None = None) -> dict:
+    """Double-progression suggestion, modulated by the session's readiness
+    score (1-5). min/max reps and target RIR come from the program-day link
+    when it overrides the exercise defaults."""
     _, sets = get_last_finished_sets_for_exercise(db, exercise.id)
     payload = [{"weight": s.weight, "reps": s.reps, "rir": s.rir, "is_effective": s.is_effective} for s in sets]
     return logic.next_session_suggestion(
-        exercise.min_reps, exercise.max_reps, exercise.increment_weight, payload,
-        readiness=readiness,
+        min_reps or exercise.min_reps, max_reps or exercise.max_reps,
+        exercise.increment_weight, payload,
+        readiness=readiness, rir_gate=_rir_gate(rir_target),
     )
 
 

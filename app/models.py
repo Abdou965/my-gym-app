@@ -53,6 +53,8 @@ class ProgramDay(Base):
     is_rest = Column(Boolean, default=False)
     # يوم كارديو: نشاط حر لا يُتتبَّع بالمجموعات (لا جلسة تمارين)
     is_cardio = Column(Boolean, default=False)
+    # هدف الحصة وملاحظاتها (نص حر، يُعرض كما هو)
+    note = Column(Text, default="")
 
     program = relationship("Program", back_populates="days")
     exercises = relationship(
@@ -70,9 +72,32 @@ class ProgramDayExercise(Base):
     exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
     order_index = Column(Integer, nullable=False)
     target_sets = Column(Integer, default=3)
+    # تجاوزات خاصة بهذا اليوم/البرنامج؛ NULL = استخدم قيم مكتبة التمارين
+    min_reps = Column(Integer, nullable=True)
+    max_reps = Column(Integer, nullable=True)
+    rest_min = Column(Integer, nullable=True)   # ثوانٍ
+    rest_max = Column(Integer, nullable=True)
+    rir_target = Column(String, default="")     # مثل "1–3"
+    note = Column(Text, default="")
 
     day = relationship("ProgramDay", back_populates="exercises")
     exercise = relationship("Exercise", back_populates="day_links")
+
+    @property
+    def reps_lo(self) -> int:
+        return self.min_reps or self.exercise.min_reps
+
+    @property
+    def reps_hi(self) -> int:
+        return self.max_reps or self.exercise.max_reps
+
+    @property
+    def rest_text(self) -> str:
+        """e.g. "120–180 ث" or "60 ث"; empty when no rest is prescribed."""
+        if not self.rest_min:
+            return ""
+        hi = self.rest_max or self.rest_min
+        return f"{self.rest_min} ث" if hi == self.rest_min else f"{self.rest_min}–{hi} ث"
 
 
 class Workout(Base):

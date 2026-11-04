@@ -44,13 +44,14 @@ def next_session_suggestion(
     increment_weight: float,
     last_sets: Iterable[dict],
     readiness: Optional[int] = None,
+    rir_gate: int = 2,
 ) -> dict:
     """Double-progression decision, adjusted by today's readiness (1-5).
 
     last_sets: iterable of {"weight","reps","rir","is_effective"}.
 
     Base rule: if every effective set at the top weight met/exceeded
-    max_reps AND RIR <= 2 (or unrecorded) -> bump the weight by
+    max_reps AND RIR <= rir_gate (default 2, or unrecorded) -> bump the weight by
     increment_weight. Otherwise hold and chase reps first.
 
     Readiness modulation (None = no adjustment):
@@ -70,7 +71,8 @@ def next_session_suggestion(
     top_sets = [s for s in effective if s["weight"] == top_weight]
 
     hit_rep_target = all(s["reps"] >= max_reps for s in top_sets)
-    low_rir = all((s.get("rir") is None or s["rir"] <= 2) for s in top_sets)
+    # rir_gate: أعلى RIR مقبول للزيادة (الافتراضي 2؛ يُشتق من RIR المستهدف للتمرين)
+    low_rir = all((s.get("rir") is None or s["rir"] <= rir_gate) for s in top_sets)
     ready_low = readiness is not None and readiness <= LOW_READINESS
 
     # 1) very low readiness -> light deload instead of pushing

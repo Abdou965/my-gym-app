@@ -153,7 +153,9 @@ def session_page(request: Request, workout_id: int, ex: int = 0, db: Session = D
     prev_workout, prev_sets = crud.get_last_finished_sets_for_exercise(
         db, current["exercise"].id, exclude_workout_id=workout_id
     )
-    suggestion = crud.get_progression_suggestion(db, current["exercise"], readiness=workout.readiness_score)
+    suggestion = crud.get_progression_suggestion(
+        db, current["exercise"], readiness=workout.readiness_score,
+        min_reps=current["min_reps"], max_reps=current["max_reps"], rir_target=current["rir_target"])
     return render(
         request, "session.html", db=db, active_page="session",
         workout=workout, items=items, ex_index=ex, current=current,
@@ -171,7 +173,9 @@ def session_exercise_panel(request: Request, workout_id: int, ex_index: int, db:
     prev_workout, prev_sets = crud.get_last_finished_sets_for_exercise(
         db, current["exercise"].id, exclude_workout_id=workout_id
     )
-    suggestion = crud.get_progression_suggestion(db, current["exercise"], readiness=workout.readiness_score)
+    suggestion = crud.get_progression_suggestion(
+        db, current["exercise"], readiness=workout.readiness_score,
+        min_reps=current["min_reps"], max_reps=current["max_reps"], rir_target=current["rir_target"])
     return templates.TemplateResponse(
         request, "components/exercise_panel.html",
         {"workout": workout, "items": items, "ex_index": ex_index, "current": current,
