@@ -1,0 +1,14 @@
+{# دليل الأداء المختصر داخل الجلسة. يتطلب: g (الدليل)، gkey (المفتاح) #}
+<details class="acc">
+  <summary>📖 طريقة الأداء الصحيحة <span class="pill ac" style="margin:0">{{ g.tempo }}</span></summary>
+  <div class="acc-b">
+    <div class="phase"><div class="ph-ic">🧍</div><div><div class="ph-t">الوضعية</div>
+      <ul class="blist">{% for s in g.setup %}<li>{{ s }}</li>{% endfor %}</ul></div></div>
+    <div class="phase"><div class="ph-ic">⬇️</div><div><div class="ph-t">النزول (السلبي)</div><div class="txt">{{ g.eccentric }}</div></div></div>
+    <div class="phase"><div class="ph-ic">⬆️</div><div><div class="ph-t">الدفع / السحب (الإيجابي)</div><div class="txt">{{ g.concentric }}</div></div></div>
+    <div class="phase"><div class="ph-ic">🌬️</div><div><div class="ph-t">التنفس</div><div class="txt">{{ g.breathing }}</div></div></div>
+    <div class="phase"><div class="ph-ic">⚠️</div><div><div class="ph-t">أخطاء شائعة</div>
+      <ul class="blist bad">{% for s in g.mistakes %}<li>{{ s }}</li>{% endfor %}</ul></div></div>
+    <a href="/guide/exercises/{{ gkey }}" class="btn btn-o btn-sm" style="margin-top:6px">الدليل الكامل والمراجع ←</a>
+  </div>
+</details>

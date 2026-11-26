@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "components/refs.html" import ref_list %}
+{% block content %}
+<div class="crumb"><a href="/guide">الدليل</a> ‹ البرامج</div>
+<h2 style="margin-bottom:4px">البرامج التدريبية</h2>
+<div class="muted" style="font-size:11.5px;margin-bottom:12px;line-height:1.8">
+  التحليل يحسب المجموعات المباشرة أسبوعياً لكل عضلة ويقارنها بالنطاق الموصى به ({{ low }}–{{ high }} مجموعة).
+  <span class="pill low">أقل</span><span class="pill near">قريب</span><span class="pill ok">مثالي</span><span class="pill high">مرتفع</span>
+</div>
+
+{% for c in cards %}
+{% set p = c.program %}{% set i = c.info %}{% set a = c.analysis %}
+<details class="acc" {{ 'open' if c.current }}>
+  <summary>
+    <span style="font-size:18px">{{ '⭐' if c.current else '🗓️' }}</span>
+    <span style="flex:1;min-width:0">{{ p.name }}
+      <span style="display:block;font-size:10px;color:var(--txt2);font-weight:400">{{ a.training_days }} أيام تدريب{% if i.level %} • {{ i.level }}{% endif %}{% if c.current %} • برنامجك الحالي{% endif %}</span>
+    </span>
+  </summary>
+  <div class="acc-b">
+    {% if i %}
+    <div class="txt" style="margin-bottom:6px"><b>الهدف:</b> {{ i.goal }}<br><b>لمن:</b> {{ i.who }}<br><b>لماذا يعمل:</b> {{ i.why }}</div>
+    {% endif %}
+    <div class="sec" style="margin-top:10px"><span>الحجم الأسبوعي لكل عضلة</span><span class="muted" style="font-size:9.5px;letter-spacing:0">الهدف {{ a.low }}–{{ high }}</span></div>
+    {% for r in a.rows %}
+    <div class="bar-row">
+      <div class="bar-lbl" style="width:92px">{{ r.muscle }}</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:{{ (r.sets / a.max * 100)|round }}%;{% if r.status == 'low' %}background:linear-gradient(90deg,#ff9a3d,#ffcf3d){% elif r.status == 'near' %}background:linear-gradient(90deg,var(--blu),var(--cy)){% elif r.status == 'high' %}background:linear-gradient(90deg,var(--mg),var(--pur)){% endif %}"></div></div>
+      <div class="bar-val" style="width:30px">{{ r.sets|int if r.sets == r.sets|int else r.sets }}</div>
+      {% if r.status != 'info' %}<span class="pill {{ r.status }}" style="margin:0">{{ {'low':'أقل','near':'قريب','ok':'مثالي','high':'مرتفع'}[r.status] }}</span>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="muted" style="font-size:10px;line-height:1.7;margin:4px 0 8px">العدّ الكسري: المجموعة = 1 للعضلة المستهدفة و ½ للعضلات المساعدة (مثل الترايسبس في الضغط). للمبتدئين يكفي 6 مجموعات فأكثر في البداية.</div>
+
+    <div class="sec"><span>الأيام</span></div>
+    {% for d in p.days %}
+    <div class="hc" style="padding:10px 13px">
+      <div class="hn" style="margin-bottom:3px">{{ d.name }}</div>
+      {% if d.note %}<div class="muted" style="font-size:10.5px;line-height:1.8;margin-bottom:4px">{{ d.note }}</div>{% endif %}
+      {% for l in d.exercises %}
+      {% set gk = guide_key(l.exercise.name) %}
+      <div style="display:flex;justify-content:space-between;gap:8px;font-size:11.5px;padding:3px 0;border-top:1px dashed var(--bdr)">
+        {% if gk %}<a href="/guide/exercises/{{ gk }}" style="color:var(--txt);text-decoration:none">{{ l.exercise.name }} ↗</a>{% else %}<span>{{ l.exercise.name }}</span>{% endif %}
+        <span class="muted" style="white-space:nowrap" dir="ltr">{{ l.target_sets }}×{{ l.reps_lo }}–{{ l.reps_hi }}{% if l.rir_target %} • RIR {{ l.rir_target }}{% endif %}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+
+    {% if not c.current %}
+    <form method="post" action="/guide/programs/{{ p.id }}/use" style="margin-top:8px">
+      <button class="btn btn-y" type="submit">اعتمد هذا البرنامج ▶</button>
+    </form>
+    {% endif %}
+    {% if i.refs %}{{ ref_list(refs(i.refs)) }}{% endif %}
+  </div>
+</details>
+{% endfor %}
+{% endblock %}

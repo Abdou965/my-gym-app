@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "components/refs.html" import ref_list %}
+{% block content %}
+<div class="crumb"><a href="/guide">الدليل</a> ‹ علم التدريب</div>
+<h2 style="margin-bottom:4px">مبادئ التدريب المبنية على الأدلة</h2>
+<div class="muted" style="font-size:11.5px;margin-bottom:12px;line-height:1.8">ملخص لأحدث التحاليل التلوية حول التضخم والقوة، وكيف يطبّقها التطبيق تلقائياً.</div>
+
+{% for p in principles %}
+<details class="acc" {{ 'open' if loop.first }}>
+  <summary><span style="font-size:18px">{{ p.icon }}</span> {{ p.title }}</summary>
+  <div class="acc-b">
+    <div class="card card-y txt" style="margin-bottom:8px"><b>الخلاصة:</b> {{ p.summary }}</div>
+    <ul class="blist">{% for s in p.points %}<li>{{ s }}</li>{% endfor %}</ul>
+    <div class="txt" style="margin-top:6px;font-size:11.5px"><span class="pill ok">في التطبيق</span> {{ p.apply }}</div>
+    {{ ref_list(refs(p.refs), "مراجع هذا المبدأ") }}
+  </div>
+</details>
+{% endfor %}
+{% endblock %}

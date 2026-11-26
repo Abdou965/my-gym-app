@@ -267,3 +267,140 @@ ADVANCED_PROGRAM = {
 }
 
 PROGRAMS.append(ADVANCED_PROGRAM)
+
+
+# ── البرامج العلمية (نوفمبر 2026) ─────────────────────────────────────────
+# مبنية على: 10–20 مجموعة فعّالة أسبوعياً لكل عضلة (Schoenfeld 2017; Pelland 2025)،
+# تدريب كل عضلة مرتين أسبوعياً (Schoenfeld 2016)، RIR 0–3 (Refalo 2023; Robinson 2024)،
+# راحة 2–3 دقائق للمركبات (Schoenfeld 2016; Singer 2024)، وتفضيل تمارين وضع الإطالة
+# (Maeo 2021/2023; Pedrosa 2022). الترتيب الأحد..السبت كما في البرنامج المتقدم.
+RIR_COMPOUND = "1–3"
+RIR_ACCESS = "0–2"
+REST_C = (120, 180)
+REST_M = (90, 120)
+REST_I = (60, 90)
+
+FULL_BODY_SCI_NAME = "Full Body علمي — 3 أيام (مبتدئ)"
+UPPER_LOWER_SCI_NAME = "Upper/Lower علمي — 4 أيام (متوسط)"
+
+FULL_BODY_SCI = {
+    "name": FULL_BODY_SCI_NAME,
+    "managed": True,
+    "days": [
+        {"name": "الأحد — جسم كامل A", "muscles": "أرجل / صدر / ظهر / كتف / ذراع", "is_rest": False,
+         "note": "تعلّم الحركات الأساسية بأوزان تسمح بتقنية مثالية. ابدأ بإحماء تصاعدي للسكوات. "
+                 "الأسابيع 1–2: RIR 3 في كل المجموعات، ثم انتقل إلى RIR المستهدف.",
+         "exercises": [
+             lk("squat", 3, (6, 10), REST_C, RIR_COMPOUND, "أذرع الأمان أسفل أدنى نقطة؛ العمق حسب مرونتك."),
+             lk("bench", 3, (6, 10), REST_C, RIR_COMPOUND, "توقف لحظة على الصدر بلا ارتداد."),
+             lk("mg_pulldown", 3, (8, 12), REST_M, RIR_COMPOUND),
+             lk("rdl", 2, (8, 12), REST_C, RIR_COMPOUND, "إطالة الهمسترينج هي الهدف، لا لمس الأرض."),
+             lk("lat_raise", 3, (12, 20), REST_I, RIR_ACCESS),
+             lk("oh_ext", 2, (10, 15), REST_I, RIR_ACCESS),
+             lk("incline_curl", 2, (10, 15), REST_I, RIR_ACCESS),
+             lk("calf", 2, (8, 12), REST_I, RIR_ACCESS, "توقف ثانيتين في الأسفل."),
+         ]},
+        {"name": "🧘 الاثنين — راحة", "muscles": "", "is_rest": True,
+         "note": "مشي 6–10 آلاف خطوة يدعم الصحة وحرق الطاقة دون التأثير على التعافي.", "exercises": []},
+        {"name": "الثلاثاء — جسم كامل B", "muscles": "أرجل / صدر / ظهر / كتف / ذراع", "is_rest": False,
+         "note": "زوايا مختلفة عن اليوم A لنفس العضلات: ضغط مائل، سحب بمسند صدر، ثني ساق جالساً.",
+         "exercises": [
+             lk("leg_press", 3, (10, 15), REST_M, RIR_COMPOUND, "لا تقفل الركبتين، والحوض ملتصق بالمسند."),
+             lk("incline_db", 3, (8, 12), REST_M, RIR_COMPOUND),
+             lk("chest_row", 3, (8, 12), REST_M, RIR_COMPOUND),
+             lk("seated_leg_curl", 3, (10, 15), REST_I, RIR_ACCESS),
+             lk("cable_lat_raise", 2, (12, 20), REST_I, RIR_ACCESS),
+             lk("rope_pushdown", 2, (10, 15), REST_I, RIR_ACCESS),
+             lk("hammer_curl", 2, (10, 15), REST_I, RIR_ACCESS),
+             lk("calf", 3, (8, 12), REST_I, RIR_ACCESS, "توقف ثانيتين في الأسفل."),
+         ]},
+        {"name": "🧘 الأربعاء — راحة", "muscles": "", "is_rest": True,
+         "note": "راحة نشطة: مشي أو حركات مرونة خفيفة.", "exercises": []},
+        {"name": "الخميس — جسم كامل C", "muscles": "أرجل / صدر / ظهر / كتف / كور", "is_rest": False,
+         "note": "يوم الأرداف والظهر العلوي مع ضغط جهاز آمن للاقتراب من الفشل.",
+         "exercises": [
+             lk("hip_thrust", 3, (8, 12), REST_M, RIR_COMPOUND),
+             lk("bulgarian", 2, (8, 12), REST_M, RIR_COMPOUND, "ابدأ بالرجل الأضعف."),
+             lk("machine_chest_press", 3, (8, 12), REST_M, RIR_ACCESS),
+             lk("pullup", 3, (6, 10), REST_M, RIR_COMPOUND, "استخدم المساعدة إن لم تصل لـ 6 تكرارات نظيفة."),
+             lk("db_shoulder", 2, (8, 12), REST_M, RIR_COMPOUND),
+             lk("seated_leg_curl", 2, (10, 15), REST_I, RIR_ACCESS),
+             lk("reverse_pec_deck", 3, (12, 20), REST_I, RIR_ACCESS),
+             lk("seated_calf", 2, (12, 20), REST_I, RIR_ACCESS),
+             lk("leg_ext", 2, (12, 15), REST_I, RIR_ACCESS),
+             lk("plank", 2, (1, 1), REST_I, "", "30–45 ثانية بشد حقيقي؛ سجّل الثواني في خانة التكرارات."),
+         ]},
+        {"name": "🧘 الجمعة — راحة كاملة", "muscles": "", "is_rest": True,
+         "note": "نوم 7–9 ساعات وبروتين كافٍ.", "exercises": []},
+        {"name": "🏃‍♂️ السبت — كارديو اختياري", "muscles": "مشي سريع / دراجة / سباحة",
+         "is_rest": False, "is_cardio": True,
+         "note": "20–40 دقيقة بشدة معتدلة (تستطيع الكلام بجمل قصيرة). الكارديو المعتدل لا يعيق نمو العضل.",
+         "exercises": []},
+    ],
+}
+
+UPPER_LOWER_SCI = {
+    "name": UPPER_LOWER_SCI_NAME,
+    "managed": True,
+    "days": [
+        {"name": "الأحد — علوي A (قوة)", "muscles": "صدر / ظهر / كتف / ذراع", "is_rest": False,
+         "note": "تركيز على الضغط الأفقي والسحب العمودي بأحمال أثقل (6–10). الحجم: 22 مجموعة؛ اجمع تمارين العزل في أزواج (Superset) لتوفير الوقت.",
+         "exercises": [
+             lk("bench", 3, (6, 10), REST_C, RIR_COMPOUND),
+             lk("mg_pulldown", 3, (8, 12), REST_M, RIR_COMPOUND),
+             lk("incline_db", 2, (8, 12), REST_M, RIR_COMPOUND),
+             lk("chest_row", 3, (8, 12), REST_M, RIR_COMPOUND),
+             lk("lat_raise", 4, (12, 20), REST_I, RIR_ACCESS),
+             lk("oh_ext", 3, (10, 15), REST_I, RIR_ACCESS, "تمديد فوق الرأس: تضخم أكبر للترايسبس (Maeo 2023)."),
+             lk("bb_curl", 2, (8, 12), REST_I, RIR_ACCESS),
+             lk("reverse_pec_deck", 2, (12, 20), REST_I, RIR_ACCESS),
+         ]},
+        {"name": "الاثنين — سفلي A (قوة)", "muscles": "أرباعية / خلفية / أرداف / سمانة", "is_rest": False,
+         "note": "سكوات ورومانيان بأحمال ثقيلة؛ لا تختصر الراحة في المركبات. الحجم: 17 مجموعة.",
+         "exercises": [
+             lk("squat", 3, (5, 8), REST_C, RIR_COMPOUND),
+             lk("rdl", 3, (6, 10), REST_C, RIR_COMPOUND),
+             lk("leg_press", 2, (10, 15), REST_M, RIR_ACCESS),
+             lk("seated_leg_curl", 3, (10, 15), REST_I, RIR_ACCESS, "جالساً لا مستلقياً: تضخم أكبر (Maeo 2021)."),
+             lk("calf", 4, (8, 12), REST_I, RIR_ACCESS, "توقف ثانيتين في الأسفل؛ النصف السفلي هو الأهم (Kassiano 2023)."),
+             lk("plank", 2, (1, 1), REST_I, "", "30–45 ثانية."),
+         ]},
+        {"name": "🧘 الثلاثاء — راحة", "muscles": "", "is_rest": True,
+         "note": "راحة من المقاومة؛ مشي خفيف.", "exercises": []},
+        {"name": "الأربعاء — علوي B (تضخم)", "muscles": "صدر / ظهر / كتف / ذراع", "is_rest": False,
+         "note": "زوايا مختلفة ونطاقات تكرار أعلى؛ كابلات تحافظ على التوتر في وضع الإطالة. الحجم: 23 مجموعة "
+                 "(قلّل العزل إن تجاوزت الحصة 75 دقيقة).",
+         "exercises": [
+             lk("incline_bb", 3, (6, 10), REST_C, RIR_COMPOUND),
+             lk("pullup", 3, (6, 10), REST_M, RIR_COMPOUND),
+             lk("seated_row", 3, (8, 12), REST_M, RIR_COMPOUND),
+             lk("cable_fly", 2, (12, 15), REST_I, RIR_ACCESS),
+             lk("machine_shoulder_press", 2, (8, 12), REST_M, RIR_ACCESS),
+             lk("cable_lat_raise", 4, (12, 20), REST_I, RIR_ACCESS),
+             lk("rope_pushdown", 2, (10, 15), REST_I, RIR_ACCESS),
+             lk("incline_curl", 2, (10, 15), REST_I, RIR_ACCESS),
+             lk("face_pull", 2, (12, 20), REST_I, RIR_ACCESS),
+         ]},
+        {"name": "الخميس — سفلي B (تضخم)", "muscles": "أرباعية / أرداف / خلفية / سمانة", "is_rest": False,
+         "note": "هاك سكوات وهيب ثرست وتمارين أحادية. الحجم: 19 مجموعة.",
+         "exercises": [
+             lk("hack_squat", 3, (8, 12), REST_C, RIR_COMPOUND),
+             lk("hip_thrust", 3, (8, 12), REST_M, RIR_COMPOUND),
+             lk("bulgarian", 2, (8, 12), REST_M, RIR_COMPOUND),
+             lk("leg_ext", 2, (12, 15), REST_I, RIR_ACCESS),
+             lk("leg_curl", 3, (10, 15), REST_I, RIR_ACCESS),
+             lk("seated_calf", 4, (12, 20), REST_I, RIR_ACCESS),
+             lk("ab_wheel", 2, (8, 15), REST_I, RIR_ACCESS),
+         ]},
+        {"name": "🧘 الجمعة — راحة كاملة", "muscles": "", "is_rest": True,
+         "note": "التعافي: نوم، تغذية، ترطيب.", "exercises": []},
+        {"name": "🏃‍♂️ السبت — كارديو", "muscles": "سباحة / دراجة / مشي سريع",
+         "is_rest": False, "is_cardio": True,
+         "note": "30–40 دقيقة معتدلة، أو 4–6 فترات عالية الشدة إن كان الهدف لياقة قلبية. "
+                 "بعيد عن حصص الأرجل لتقليل التداخل (Schumann 2022).",
+         "exercises": []},
+    ],
+}
+
+PROGRAMS.append(FULL_BODY_SCI)
+PROGRAMS.append(UPPER_LOWER_SCI)

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="crumb"><a href="/guide">الدليل</a> ‹ التمارين</div>
+<h2 style="margin-bottom:10px">مكتبة التمارين</h2>
+
+<div class="search"><input class="inp" id="ex-q" type="search" placeholder="ابحث باسم التمرين أو العضلة…" value="{{ q }}" autocomplete="off"></div>
+<div class="cwrap" id="ex-cats">
+  <a class="dchip {{ 'on' if not cat }}" data-cat="" href="#">الكل</a>
+  {% for key, label, _ in categories %}
+  <a class="dchip {{ 'on' if cat == key }}" data-cat="{{ key }}" href="#">{{ label }}</a>
+  {% endfor %}
+</div>
+<div class="muted" style="font-size:10.5px;margin:2px 0 8px"><span id="ex-count">{{ entries|length }}</span> تمريناً</div>
+
+<div id="ex-list">
+  {% for e in entries %}
+  <a class="exi" href="/guide/exercises/{{ e.key }}" data-cat="{{ e.category }}"
+     data-s="{{ (e.name ~ ' ' ~ e.muscle_group ~ ' ' ~ (e.guide.target if e.guide else ''))|lower }}">
+    <div class="exic">{{ {'chest':'🫁','back':'🦅','shoulders':'🎯','arms':'💪','legs':'🦵','core':'🧱'}.get(e.category,'⚡') }}</div>
+    <div class="exin">
+      <div class="exn">{{ e.name }}</div>
+      <div class="exm">{{ e.guide.target if e.guide else e.muscle_group }}</div>
+    </div>
+    <div class="exb">{{ e.guide.level if e.guide else '' }}</div>
+  </a>
+  {% endfor %}
+</div>
+<div class="empty hidden" id="ex-empty">لا توجد نتائج مطابقة.</div>
+
+<script>
+(function(){
+  const q=document.getElementById("ex-q"),list=[...document.querySelectorAll("#ex-list .exi")],
+        chips=[...document.querySelectorAll("#ex-cats .dchip")],cnt=document.getElementById("ex-count"),
+        empty=document.getElementById("ex-empty");
+  let cat="{{ cat }}";
+  function apply(){
+    const t=q.value.trim().toLowerCase();let n=0;
+    list.forEach(el=>{const ok=(!cat||el.dataset.cat===cat)&&(!t||el.dataset.s.includes(t));
+      el.classList.toggle("hidden",!ok);if(ok)n++;});
+    cnt.textContent=n;empty.classList.toggle("hidden",n>0);
+  }
+  chips.forEach(c=>c.addEventListener("click",e=>{e.preventDefault();cat=c.dataset.cat;
+    chips.forEach(x=>x.classList.toggle("on",x===c));apply();}));
+  q.addEventListener("input",apply);apply();
+})();
+</script>
+{% endblock %}

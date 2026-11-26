@@ -9,7 +9,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import Base, engine, get_db
-from app import crud, schemas, logic, models
+from app import crud, schemas, logic, models, nutrition
+from app.knowledge import library, science, references, programs as kprograms
 
 Base.metadata.create_all(bind=engine)
 crud.ensure_schema(engine)  # يضيف أعمدة جديدة لقواعد SQLite القديمة
@@ -18,6 +19,10 @@ app = FastAPI(title="IronCore")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["now"] = datetime.utcnow
+# دليل الأداء لأي تمرين من مكتبة البذور (None للتمارين المخصصة)
+templates.env.globals["guide_for"] = library.guide_for_name
+templates.env.globals["guide_key"] = library.key_for_name
+templates.env.globals["refs"] = references.resolve
 
 
 @app.on_event("startup")
@@ -46,6 +51,7 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
         stats=stats, today_day=today_day, last_session=recent[0] if recent else None,
         weekly_muscle=weekly_muscle, max_muscle_count=max_muscle_count,
         weights=weights, today_label=crud.DAYS_AR[(datetime.now().weekday() + 1) % 7],
+        tip=science.PRINCIPLES[datetime.now().timetuple().tm_yday % len(science.PRINCIPLES)],
     )
 
 
@@ -308,3 +314,127 @@ def history_detail(request: Request, workout_id: int, db: Session = Depends(get_
         if sets:
             detail.append({"exercise": item["exercise"], "sets": sets})
     return render(request, "history_detail.html", db=db, active_page="history", workout=workout, detail=detail)
+
+
+# ══════════════════════════════ GUIDE (المعرفة العلمية) ═════════════════
+@app.get("/guide")
+def guide_hub(request: Request, db: Session = Depends(get_db)):
+    return render(
+        request, "guide.html", db=db, active_page="guide",
+        n_exercises=len(library.all_entries()), n_refs=len(references.REFS),
+        n_principles=len(science.PRINCIPLES), n_programs=len(crud.get_all_programs(db)),
+    )
+
+
+@app.get("/guide/exercises")
+def guide_exercises(request: Request, q: str = "", cat: str = "", db: Session = Depends(get_db)):
+    return render(
+        request, "guide_exercises.html", db=db, active_page="guide",
+        entries=library.all_entries(), categories=library.CATEGORIES, q=q, cat=cat,
+    )
+
+
+@app.get("/guide/exercises/{key}")
+def guide_exercise_detail(request: Request, key: str, db: Session = Depends(get_db)):
+    entry = library.get(key)
+    if not entry:
+        return RedirectResponse("/guide/exercises", status_code=303)
+    exercise = db.query(models.Exercise).filter_by(name=entry["name"]).first()
+    used_in, history = [], []
+    if exercise:
+        seen = set()
+        for link in exercise.day_links:
+            label = (link.day.program.name, link.day.name)
+            if label not in seen:
+                seen.add(label)
+                used_in.append({"program": label[0], "day": label[1], "sets": link.target_sets,
+                                "reps": f"{link.reps_lo}–{link.reps_hi}", "rest": link.rest_text,
+                                "rir": link.rir_target or ""})
+        history = crud.get_1rm_history(db, exercise.id, limit=8)
+    return render(
+        request, "guide_exercise_detail.html", db=db, active_page="guide",
+        e=entry, g=entry["guide"], used_in=used_in, history=history,
+        best=max((h["value"] for h in history), default=0),
+    )
+
+
+@app.get("/guide/science")
+def guide_science(request: Request, db: Session = Depends(get_db)):
+    return render(request, "guide_science.html", db=db, active_page="guide",
+                  principles=science.PRINCIPLES)
+
+
+@app.get("/guide/programs")
+def guide_programs(request: Request, db: Session = Depends(get_db)):
+    current = crud.get_current_program(db)
+    cards = []
+    for p in crud.get_all_programs(db):
+        info = kprograms.PROGRAM_INFO.get(p.name, {})
+        low = kprograms.BEGINNER_LOW if info.get("level", "").startswith("مبتدئ") else kprograms.LOW
+        cards.append({"program": p, "info": info,
+                      "analysis": kprograms.analyze_program(p, low),
+                      "current": bool(current and current.id == p.id)})
+    # البرامج العلمية أولاً
+    order = list(kprograms.PROGRAM_INFO)
+    cards.sort(key=lambda c: order.index(c["program"].name) if c["program"].name in order else 99)
+    return render(request, "guide_programs.html", db=db, active_page="guide",
+                  cards=cards, low=kprograms.LOW, high=kprograms.HIGH)
+
+
+@app.post("/guide/programs/{program_id}/use")
+def guide_use_program(program_id: int, db: Session = Depends(get_db)):
+    if db.query(models.Program).get(program_id):
+        crud.set_current_program(db, program_id)
+    return RedirectResponse("/workout", status_code=303)
+
+
+@app.get("/guide/nutrition")
+def guide_nutrition(request: Request, db: Session = Depends(get_db)):
+    weights = crud.get_body_weights(db, limit=1)
+    return render(
+        request, "guide_nutrition.html", db=db, active_page="guide",
+        last_weight=weights[0].weight if weights else None,
+        activity=nutrition.ACTIVITY, goals=nutrition.GOALS, paces=nutrition.PACE_LABELS,
+        principles=nutrition.PRINCIPLES, supplements=nutrition.SUPPLEMENTS, swaps=nutrition.ALL_SWAPS,
+    )
+
+
+def _num(v: str, cast=float, default=None):
+    try:
+        return cast(v) if str(v).strip() != "" else default
+    except ValueError:
+        return default
+
+
+@app.post("/guide/nutrition/plan")
+def guide_nutrition_plan(
+    request: Request,
+    weight: str = Form(""), height: str = Form(""), age: str = Form(""), sex: str = Form("m"),
+    activity: str = Form("1.55"), goal: str = Form("maintain"), pace: str = Form("moderate"),
+    body_fat: str = Form(""), meals: str = Form("4"), diet: str = Form("omni"),
+    training_hour: str = Form("evening"),
+):
+    w, h, a = _num(weight), _num(height), _num(age, int)
+    error = ""
+    if not w or not (30 <= w <= 250):
+        error = "أدخل وزناً بين 30 و 250 كجم."
+    elif not h or not (120 <= h <= 230):
+        error = "أدخل طولاً بين 120 و 230 سم."
+    elif not a or not (14 <= a <= 90):
+        error = "أدخل عمراً بين 14 و 90 سنة."
+    if error:
+        return templates.TemplateResponse(request, "components/nutrition_plan.html", {"error": error})
+    prof = nutrition.Profile(
+        weight=w, height=h, age=a, sex="f" if sex == "f" else "m",
+        activity=_num(activity, float, 1.55) or 1.55,
+        goal=goal if goal in nutrition.GOALS else "maintain",
+        pace=pace if pace in nutrition.PACE_LABELS else "moderate",
+        body_fat=_num(body_fat), meals=_num(meals, int, 4) or 4,
+        diet="veg" if diet == "veg" else "omni",
+        training_hour="morning" if training_hour == "morning" else "evening",
+    )
+    plan = nutrition.compute(prof)
+    return templates.TemplateResponse(
+        request, "components/nutrition_plan.html",
+        {"error": "", "plan": plan, "profile": prof, "goal_label": nutrition.GOALS[prof.goal]},
+    )
