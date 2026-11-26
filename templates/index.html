@@ -34,10 +34,19 @@
       <div class="bar-val">{{ count }}</div>
     </div>
     {% endfor %}
+    <div style="font-size:10px;color:var(--txt2);margin-top:6px;line-height:1.7">الهدف العلمي: 10–20 مجموعة فعّالة أسبوعياً لكل عضلة. <a href="/guide/science" style="color:var(--ac);text-decoration:none">لماذا؟</a></div>
   {% else %}
     <div style="font-size:11px;color:var(--txt2)">لا توجد بيانات كافية بعد — ابدأ أول جلسة</div>
   {% endif %}
 </div>
+
+{% if tip %}
+<div class="sec">معلومة علمية اليوم</div>
+<a class="gcard" href="/guide/science">
+  <div class="gt">{{ tip.icon }} {{ tip.title }}</div>
+  <div class="gs">{{ tip.summary }}</div>
+</a>
+{% endif %}
 
 <div class="sec">آخر جلسة</div>
 {% if last_session %}

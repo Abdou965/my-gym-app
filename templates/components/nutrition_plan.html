@@ -1,0 +1,67 @@
+{% from "components/refs.html" import ref_list %}
+{% if error %}
+<div class="empty" style="margin-top:4px">{{ error }}</div>
+{% else %}
+{% set kc = plan.calories %}
+<div class="card card-y" style="text-align:center">
+  <div class="muted" style="font-size:10.5px">{{ goal_label }}</div>
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:900;color:var(--ac);line-height:1.1">{{ kc }}</div>
+  <div class="muted" style="font-size:11px">سعرة يومياً</div>
+  <div class="macro">
+    <div><b style="color:var(--cy)">{{ plan.protein }}</b><small>بروتين غ</small></div>
+    <div><b style="color:var(--ac)">{{ plan.carbs }}</b><small>كربوهيدرات غ</small></div>
+    <div><b style="color:var(--mg)">{{ plan.fat }}</b><small>دهون غ</small></div>
+    <div><b style="color:var(--grn)">{{ plan.fiber }}</b><small>ألياف غ</small></div>
+  </div>
+  <div class="stack">
+    <span style="width:{{ (plan.protein*4/kc*100)|round }}%;background:var(--cy)"></span>
+    <span style="width:{{ (plan.carbs*4/kc*100)|round }}%;background:var(--ac)"></span>
+    <span style="width:{{ (plan.fat*9/kc*100)|round }}%;background:var(--mg)"></span>
+  </div>
+  <div class="muted" style="font-size:10px">بروتين {{ (plan.protein*4/kc*100)|round|int }}% • كربوهيدرات {{ (plan.carbs*4/kc*100)|round|int }}% • دهون {{ (plan.fat*9/kc*100)|round|int }}%</div>
+</div>
+
+<div class="s3">
+  <div class="sbox"><div class="sval" style="font-size:24px">{{ plan.bmr }}</div><div class="slbl">الأيض الأساسي</div></div>
+  <div class="sbox"><div class="sval" style="font-size:24px">{{ plan.tdee }}</div><div class="slbl">الصرف اليومي</div></div>
+  <div class="sbox"><div class="sval" style="font-size:24px" dir="ltr">{{ '%+.2f'|format(plan.weekly_change_kg) }}</div><div class="slbl">كجم/أسبوع متوقع</div></div>
+</div>
+
+<details class="acc" open>
+  <summary>🧠 لماذا هذه الأرقام؟</summary>
+  <div class="acc-b">
+    <ul class="blist">
+      <li><b>الأيض الأساسي:</b> معادلة {{ plan.bmr_method }}{% if plan.lean_mass %} — الكتلة الخالية من الدهون ≈ {{ plan.lean_mass }} كجم{% endif %}.</li>
+      <li><b>الصرف اليومي (TDEE):</b> الأيض × معامل النشاط {{ profile.activity }}.</li>
+      {% if profile.goal == 'cut' %}<li><b>العجز:</b> {{ plan.tdee - kc }} سعرة/يوم ≈ {{ (-plan.weekly_change_kg / profile.weight * 100)|round(2) }}% من وزنك أسبوعياً، ضمن النطاق 0.5–1% الذي يحافظ على العضل والقوة.</li>
+      {% elif profile.goal == 'bulk' %}<li><b>الفائض:</b> {{ kc - plan.tdee }} سعرة/يوم ≈ {{ (plan.weekly_change_kg / profile.weight * 100)|round(2) }}% من وزنك أسبوعياً (الموصى 0.25–0.5%) لتقليل الدهون المكتسبة.</li>
+      {% else %}<li><b>الثبات:</b> السعرات = الصرف اليومي؛ مع البروتين العالي والتدريب يمكن خسارة دهون وكسب عضل ببطء (خصوصاً للمبتدئين).</li>{% endif %}
+      <li><b>البروتين:</b> {{ (plan.protein / profile.weight)|round(1) }} غ/كجم ≈ {{ plan.protein_per_meal }} غ في كل وجبة. الأدلة: الفائدة تستقر عند ~1.6 غ/كجم مع حد أعلى 2.2، وأعلى قليلاً في العجز.</li>
+      <li><b>الدهون:</b> {{ (plan.fat*9/kc*100)|round|int }}% من الطاقة (≥ 0.6 غ/كجم) لدعم الهرمونات وامتصاص الفيتامينات.</li>
+      <li><b>الكربوهيدرات:</b> ما تبقى من الطاقة ({{ (plan.carbs / profile.weight)|round(1) }} غ/كجم) لدعم أداء التمرين.</li>
+      <li><b>الماء:</b> ≈ {{ plan.water_l }} لتر يومياً (تقدير عام؛ زِد في الحر أو مع التعرق الغزير). لون البول الفاتح مؤشر جيد.</li>
+    </ul>
+    {% for n in plan.notes %}<div class="card" style="border-right:3px solid #ff9a3d;font-size:11.5px;line-height:1.8;margin:6px 0 0">⚠️ {{ n }}</div>{% endfor %}
+    {{ ref_list(refs(['mifflin1990','garthe2011','helms2014','iraki2019','murphy2022','morton2018','jager2017','schoenfeld2018meal','thomas2016'])) }}
+  </div>
+</details>
+
+<div class="sec"><span>قائمة طعام ليوم كامل</span><span class="muted" style="font-size:10px;letter-spacing:0">{{ plan.totals.kcal }} سعرة • {{ plan.totals.p }}ب / {{ plan.totals.c }}ك / {{ plan.totals.f }}د</span></div>
+{% for m in plan.meals %}
+<div class="card" style="padding:12px 14px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+    <div style="font-size:13px;font-weight:900">{{ m.icon }} {{ m.name }}</div>
+    <div class="pill ac" style="margin:0">{{ m.kcal }} سعرة</div>
+  </div>
+  <table class="tbl">
+    <tr><th>الطعام</th><th>الكمية</th><th>ب</th><th>ك</th><th>د</th></tr>
+    {% for it in m["items"] %}
+    <tr><td>{{ it.food }}</td><td class="n"><b style="color:var(--txt)">{{ it.grams }}</b> غ</td><td class="n">{{ it.p }}</td><td class="n">{{ it.c }}</td><td class="n">{{ it.f }}</td></tr>
+    {% endfor %}
+    <tr><td><b>المجموع</b></td><td></td><td class="n"><b>{{ m.p }}</b></td><td class="n"><b>{{ m.c }}</b></td><td class="n"><b>{{ m.f }}</b></td></tr>
+  </table>
+</div>
+{% endfor %}
+<div class="muted" style="font-size:10px;line-height:1.8">الأوزان للطعام مطبوخاً (ما لم يُذكر غير ذلك)، والقيم تقريبية من USDA FoodData Central (±10–15%). استخدم صفحة البدائل أدناه للتنويع بنفس الماكروز.</div>
+{{ ref_list(refs(['usda_fdc','who_sugar2015']), "مصادر بيانات الأطعمة") }}
+{% endif %}

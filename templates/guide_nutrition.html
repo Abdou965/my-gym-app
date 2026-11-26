@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% from "components/refs.html" import ref_list %}
+{% block content %}
+<div class="crumb"><a href="/guide">الدليل</a> ‹ التغذية</div>
+<h2 style="margin-bottom:4px">مخطط التغذية الشخصي</h2>
+<div class="muted" style="font-size:11.5px;margin-bottom:12px;line-height:1.8">أدخل بياناتك ليُحسب احتياجك وتُبنى قائمة طعام ليوم كامل بالغرامات. تتحدث النتيجة فوراً مع كل تغيير.</div>
+
+<form id="nut-form" class="card" hx-post="/guide/nutrition/plan" hx-target="#nut-plan" hx-swap="innerHTML"
+      hx-trigger="load, input changed delay:400ms, change">
+  <div class="r3" style="gap:8px;margin-bottom:8px">
+    <div><label class="inp-lbl">الوزن (كجم)</label><input class="inp" type="number" step="0.1" name="weight" value="{{ last_weight or '' }}" placeholder="80"></div>
+    <div><label class="inp-lbl">الطول (سم)</label><input class="inp" type="number" name="height" placeholder="175"></div>
+    <div><label class="inp-lbl">العمر</label><input class="inp" type="number" name="age" placeholder="25"></div>
+  </div>
+  <div class="r2" style="gap:8px;margin-bottom:8px">
+    <div><label class="inp-lbl">الجنس</label>
+      <select class="inp" name="sex"><option value="m">ذكر</option><option value="f">أنثى</option></select></div>
+    <div><label class="inp-lbl">نسبة الدهون % (اختياري)</label><input class="inp" type="number" step="0.1" name="body_fat" placeholder="من حاسبة Navy"></div>
+  </div>
+  <label class="inp-lbl">مستوى النشاط</label>
+  <select class="inp" name="activity" style="margin-bottom:8px">
+    {% for v, lb in activity.items() %}<option value="{{ v }}" {{ 'selected' if v == '1.55' }}>{{ lb }}</option>{% endfor %}
+  </select>
+  <label class="inp-lbl">الهدف</label>
+  <div class="cwrap" style="margin-bottom:4px">
+    {% for k, lb in goals.items() %}
+    <label class="dchip goal-chip {{ 'on' if k == 'maintain' }}" style="cursor:pointer"><input type="radio" name="goal" value="{{ k }}" {{ 'checked' if k == 'maintain' }} style="display:none">{{ lb }}</label>
+    {% endfor %}
+  </div>
+  <div class="r2" style="gap:8px;margin-bottom:8px">
+    <div><label class="inp-lbl">سرعة التغيير</label>
+      <select class="inp" name="pace">{% for k, lb in paces.items() %}<option value="{{ k }}" {{ 'selected' if k == 'moderate' }}>{{ lb }}</option>{% endfor %}</select></div>
+    <div><label class="inp-lbl">عدد الوجبات</label>
+      <select class="inp" name="meals"><option>3</option><option selected>4</option><option>5</option></select></div>
+  </div>
+  <div class="r2" style="gap:8px">
+    <div><label class="inp-lbl">نمط الأكل</label>
+      <select class="inp" name="diet"><option value="omni">عادي (لحوم وأسماك)</option><option value="veg">نباتي (بيض وألبان)</option></select></div>
+    <div><label class="inp-lbl">وقت التمرين</label>
+      <select class="inp" name="training_hour"><option value="evening">مساءً</option><option value="morning">صباحاً</option></select></div>
+  </div>
+</form>
+
+<div id="nut-plan"></div>
+
+<div class="sec"><span>المبادئ العلمية للتغذية</span></div>
+{% for p in principles %}
+<details class="acc">
+  <summary>🥗 {{ p.title }}</summary>
+  <div class="acc-b"><div class="txt">{{ p.body }}</div>{{ ref_list(refs(p.refs), "المراجع") }}</div>
+</details>
+{% endfor %}
+
+<div class="sec"><span>المكملات المدعومة بالأدلة</span></div>
+{% for s in supplements %}
+<div class="card">
+  <div style="font-size:13px;font-weight:900;margin-bottom:3px">💊 {{ s.name }}</div>
+  <div class="pill ac">{{ s.dose }}</div>
+  <div class="txt muted">{{ s.why }}</div>
+  {{ ref_list(refs(s.refs), "المراجع") }}
+</div>
+{% endfor %}
+
+<div class="sec"><span>بدائل الأطعمة</span></div>
+<div class="card">
+  {% for cat, rows in swaps.items() %}
+  <div style="font-size:11px;font-weight:900;color:var(--ac);margin:4px 0">{{ cat }}</div>
+  <ul class="blist">{% for r in rows %}<li>{{ r }}</li>{% endfor %}</ul>
+  {% endfor %}
+</div>
+
+<script>
+document.querySelectorAll(".goal-chip").forEach(c=>c.addEventListener("click",()=>{
+  document.querySelectorAll(".goal-chip").forEach(x=>x.classList.toggle("on",x===c));
+}));
+// احفظ مدخلات النموذج محلياً لتسهيل العودة (اختياري، يتجاهل الأخطاء)
+(function(){
+  const f=document.getElementById("nut-form"),K="ironcore-nut";
+  try{const d=JSON.parse(localStorage.getItem(K)||"{}");
+    for(const [n,v] of Object.entries(d)){const els=f.querySelectorAll(`[name="${n}"]`);
+      els.forEach(el=>{if(el.type==="radio"){el.checked=el.value===v;el.closest("label")?.classList.toggle("on",el.checked);}
+        else if(!(n==="weight"&&el.value)) el.value=v;});}
+  }catch(e){}
+  f.addEventListener("input",()=>{try{localStorage.setItem(K,JSON.stringify(Object.fromEntries(new FormData(f))));}catch(e){}});
+  f.addEventListener("change",()=>{try{localStorage.setItem(K,JSON.stringify(Object.fromEntries(new FormData(f))));}catch(e){}});
+})();
+</script>
+{% endblock %}

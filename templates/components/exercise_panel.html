@@ -5,8 +5,15 @@
   <div style="font-size:11px;color:var(--txt2);flex-shrink:0;margin-right:8px">{{ ex_index + 1 }}/{{ items|length }}</div>
 </div>
 <div style="font-size:11px;color:var(--txt2);margin-bottom:8px">
-  {{ current.exercise.muscle_group }} — هدف: {{ current.target_sets }}×{{ current.exercise.min_reps }}–{{ current.exercise.max_reps }}
+  {{ current.exercise.muscle_group }} — هدف: <span dir="ltr">{{ current.target_sets }}×{{ current.min_reps }}–{{ current.max_reps }}</span>
 </div>
+<div style="margin-bottom:8px">
+  {% if current.rest_min %}<span class="pill cy">⏱ راحة {{ current.rest_min }}{% if current.rest_max and current.rest_max != current.rest_min %}–{{ current.rest_max }}{% endif %} ث</span>{% endif %}
+  {% if current.rir_target %}<span class="pill ac">🎯 <bdi dir="ltr">RIR {{ current.rir_target }}</bdi></span>{% endif %}
+</div>
+{% if current.note %}
+<div class="card" style="font-size:11.5px;line-height:1.8;margin-bottom:9px;border-right:3px solid var(--cy)">📝 {{ current.note }}</div>
+{% endif %}
 
 <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
   {% for item in items %}
@@ -21,6 +28,9 @@
   <b style="color:var(--ac)">💡 </b>{{ current.exercise.tip }}
 </div>
 {% endif %}
+
+{% set g = guide_for(current.exercise.name) %}
+{% if g %}{% set gkey = guide_key(current.exercise.name) %}{% include "components/form_guide.html" %}{% endif %}
 
 {% if suggestion %}
 {% set sc = {'increase':'var(--grn)','deload':'var(--red)','hold':'var(--blu)'}[suggestion.action] %}

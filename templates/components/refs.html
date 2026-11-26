@@ -1,0 +1,17 @@
+{# macro: قائمة المراجع العلمية. الاستخدام: {% from "components/refs.html" import ref_list %}{{ ref_list(refs(ids)) }} #}
+{% macro ref_list(items, title="المراجع العلمية") %}
+{% if items %}
+<details class="acc" style="margin-top:4px">
+  <summary>📚 {{ title }} <span class="pill" style="margin:0">{{ items|length }}</span></summary>
+  <div class="acc-b">
+    <ul class="reflist">
+      {% for r in items %}
+      <li><span class="pill cy" style="margin:0 0 3px 4px">{{ r.type }}</span>
+        <span class="rt">{{ r.title }}</span><br>{{ r.cite }}
+        — <a href="{{ r.url }}" target="_blank" rel="noopener">المصدر ↗</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+</details>
+{% endif %}
+{% endmacro %}
