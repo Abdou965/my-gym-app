@@ -1,0 +1,52 @@
+{
+  "app/__init__.py": {
+    "mtime": 1793789002.0,
+    "ast_hash": "68b329da9893e34099c7d8ad5cb9c940",
+    "semantic_hash": "68b329da9893e34099c7d8ad5cb9c940"
+  },
+  "app/crud.py": {
+    "mtime": 1793789002.0,
+    "ast_hash": "e392a32a723ce11d348ef4d31f690e62",
+    "semantic_hash": "e392a32a723ce11d348ef4d31f690e62"
+  },
+  "app/database.py": {
+    "mtime": 1793789002.0,
+    "ast_hash": "8a0ad273d8432825a4ffc9d24f484df8",
+    "semantic_hash": "8a0ad273d8432825a4ffc9d24f484df8"
+  },
+  "app/logic.py": {
+    "mtime": 1793789002.0,
+    "ast_hash": "998812295a2d928cc7b99639121e632d",
+    "semantic_hash": "998812295a2d928cc7b99639121e632d"
+  },
+  "app/main.py": {
+    "mtime": 1793789002.0,
+    "ast_hash": "a6c1c964cbc5c48b8aa75e7b983d1e3b",
+    "semantic_hash": "a6c1c964cbc5c48b8aa75e7b983d1e3b"
+  },
+  "app/models.py": {
+    "mtime": 1793789002.0,
+    "ast_hash": "1341e87d1a85d33e2e0f93480a7e71de",
+    "semantic_hash": "1341e87d1a85d33e2e0f93480a7e71de"
+  },
+  "app/schemas.py": {
+    "mtime": 1793789002.0,
+    "ast_hash": "1c522d89467ec6045dc68280261ccff0",
+    "semantic_hash": "1c522d89467ec6045dc68280261ccff0"
+  },
+  "app/seed_data.py": {
+    "mtime": 1793789002.0,
+    "ast_hash": "1e7202c21162acd7ae386f7d88b98be9",
+    "semantic_hash": "1e7202c21162acd7ae386f7d88b98be9"
+  },
+  "static/manifest.json": {
+    "mtime": 1793789002.0,
+    "ast_hash": "7e9112729fb61a4513ca3d4031eb513f",
+    "semantic_hash": "7e9112729fb61a4513ca3d4031eb513f"
+  },
+  "static/sw.js": {
+    "mtime": 1793789002.0,
+    "ast_hash": "626113b59cd5163a1ac781e814635af7",
+    "semantic_hash": "626113b59cd5163a1ac781e814635af7"
+  }
+}
