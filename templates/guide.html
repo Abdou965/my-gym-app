@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="margin-bottom:4px">الدليل العلمي</h2>
+<div class="muted" style="font-size:11.5px;margin-bottom:14px;line-height:1.8">
+  كل توصية في التطبيق مبنية على دراسات محكّمة حديثة (تحاليل تلوية ومواقف رسمية لـ ISSN و ACSM)، مع رابط لكل مصدر.
+</div>
+
+<a class="hero" href="/guide/nutrition">
+  <div class="hero-lbl">مخطط تغذية شخصي</div>
+  <div class="hero-name">🍽️ سعراتك، الماكروز، وقائمة طعام ليوم كامل</div>
+  <div class="hero-sub">محسوبة من وزنك وهدفك ونشاطك، مع شرح سبب كل رقم.</div>
+  <div class="hero-chip">احسب خطتي ←</div>
+</a>
+
+<div class="g2">
+  <a class="gcard" href="/guide/exercises">
+    <div class="gi">🏋️</div><div class="gt">التمارين</div>
+    <div class="gs">{{ n_exercises }} تمريناً: الوضعية، النزول، الدفع، التنفس، الأخطاء والأمان.</div>
+  </a>
+  <a class="gcard" href="/guide/programs">
+    <div class="gi">🗓️</div><div class="gt">البرامج</div>
+    <div class="gs">{{ n_programs }} برامج مع تحليل الحجم الأسبوعي لكل عضلة.</div>
+  </a>
+  <a class="gcard" href="/guide/science">
+    <div class="gi">🔬</div><div class="gt">علم التدريب</div>
+    <div class="gs">{{ n_principles }} مبدأ: الحجم، الشدة، RIR، الراحة، التدرج، التعافي.</div>
+  </a>
+  <a class="gcard" href="/tools">
+    <div class="gi">🧮</div><div class="gt">الحاسبات</div>
+    <div class="gs">1RM، نسبة الدهون، وجدول نسب الأحمال.</div>
+  </a>
+</div>
+
+<div class="card" style="margin-top:12px;font-size:11px;line-height:1.9;color:var(--txt2)">
+  📚 قاعدة المراجع: <b style="color:var(--txt)">{{ n_refs }}</b> مصدراً علمياً.
+  المحتوى تثقيفي ولا يغني عن استشارة طبيب أو أخصائي تغذية عند وجود حالة صحية أو إصابة.
+</div>
+{% endblock %}

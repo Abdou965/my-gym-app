@@ -13,6 +13,9 @@
   <div style="font-size:13px;font-weight:900;color:var(--ac);margin-bottom:9px">
     {{ day.name }}{% if day.muscles %} — {{ day.muscles }}{% endif %}
   </div>
+  {% if day.note %}
+  <div class="card" style="font-size:11.5px;line-height:1.85;margin-bottom:9px;border-right:3px solid var(--cy);color:var(--txt2)">🎯 {{ day.note }}</div>
+  {% endif %}
   {% if day.is_rest %}
     <div class="empty" style="padding:30px">🧘<br><br>يوم راحة وتعافٍ<br><small style="color:var(--txt3)">نم جيداً، ارتح، وتناول بروتيناً كافياً</small></div>
   {% elif day.is_cardio %}
@@ -23,11 +26,13 @@
     </div>
   {% else %}
     {% for link in day.exercises %}
-    <div class="exi">
-      <div class="exic">⚡</div>
-      <div class="exin"><div class="exn">{{ link.exercise.name }}</div><div class="exm">{{ link.exercise.muscle_group }}</div></div>
-      <div class="exb">{{ link.target_sets }}×{{ link.exercise.min_reps }}–{{ link.exercise.max_reps }}</div>
-    </div>
+    {% set gk = guide_key(link.exercise.name) %}
+    <a class="exi" {% if gk %}href="/guide/exercises/{{ gk }}"{% endif %}>
+      <div class="exic">{{ '📖' if gk else '⚡' }}</div>
+      <div class="exin"><div class="exn">{{ link.exercise.name }}</div>
+        <div class="exm">{{ link.exercise.muscle_group }}{% if link.rest_text %} • راحة {{ link.rest_text }}{% endif %}{% if link.rir_target %} • <bdi dir="ltr">RIR {{ link.rir_target }}</bdi>{% endif %}</div></div>
+      <div class="exb" dir="ltr">{{ link.target_sets }}×{{ link.reps_lo }}–{{ link.reps_hi }}</div>
+    </a>
     {% endfor %}
     <form method="post" action="/workout/start">
       <input type="hidden" name="day_id" value="{{ day.id }}">
